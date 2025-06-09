@@ -1,46 +1,30 @@
 import { router } from "expo-router";
 import { Users, Wrench } from "lucide-react-native";
 import React, { useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import RegistrationLayout from "../../layouts/RegistrationLayout";
 
 export default function UserTypeScreen() {
-  const [selected, setSelected] = useState<"cliente" | "especialista" | null>("cliente");
+  const [selected, setSelected] = useState<"client" | "specialist" | null>("client");
 
   return (
-    <View className="flex-1 bg-[#FFFDEB] px-6 pt-10">
-      {/* Barra de progreso y back */}
-      <View className="flex-row items-center mb-2">
-        <View className="flex-1 h-1 bg-cyan-300 rounded-full" />
-      </View>
-    <TouchableOpacity>
-        <Text className="text-2xl text-gray-400 mr-2">{"<"}</Text>
-    </TouchableOpacity>
-
-      {/* Logo */}
-      <View className="items-center mb-2">
-        <Image
-          source={require("../assets/images/logo.png")}
-          className="w-44 h-44 mb-2"
-          resizeMode="contain"
-        />
-      </View>
-
+    <RegistrationLayout currentStep={1} totalSteps={6}>
       {/* Título */}
-      <Text className="text-xl font-bold text-cyan-500 text-center mt-1 mb-2">
+      <Text className="text-3xl font-bold text-cyan-500 text-center mt-0 mb-2">
         ¿Cómo quieres usar FixMatch?
       </Text>
       <Text className="text-center text-base text-gray-700 mb-6">
         Elige si deseas buscar ayuda para tu hogar{"\n"}
-        o si quieres ofrecer tus servicios como especialista.
+        o si quieres ofrecer tus servicios como specialist.
       </Text>
 
       {/* Opciones */}
       <View className="flex-row justify-center mb-8 space-x-4">
         {/* Cliente */}
         <TouchableOpacity
-          className={`flex-1 bg-gray-50 rounded-xl p-5 border ${selected === "cliente" ? "border-cyan-400" : "border-gray-200"}`}
+          className={`flex-1 bg-gray-50 rounded-xl p-5 border ${selected === "client" ? "border-cyan-400" : "border-gray-200"}`}
           onPress={() => {
-            setSelected("cliente");
+            setSelected("client");
           }}
         >
           <View className="items-center mb-2">
@@ -51,10 +35,10 @@ export default function UserTypeScreen() {
             Necesito ayuda con un problema en mi hogar
           </Text>
         </TouchableOpacity>
-        {/* Especialista */}
+        {/* specialist */}
         <TouchableOpacity
-          className={`flex-1 bg-gray-50 rounded-xl p-5 border ${selected === "especialista" ? "border-cyan-400" : "border-gray-200"}`}
-          onPress={() => setSelected("especialista")}
+          className={`flex-1 bg-gray-50 rounded-xl p-5 border ${selected === "specialist" ? "border-cyan-400" : "border-gray-200"}`}
+          onPress={() => setSelected("specialist")}
         >
           <View className="items-center mb-2">
             <Wrench size={36} color="#222" />
@@ -71,15 +55,14 @@ export default function UserTypeScreen() {
         className="w-full bg-yellow-300 rounded-lg py-3 mt-2"
         disabled={!selected}
         onPress={() => {
-          if (selected === "cliente") {
-            router.push("/OptionalNewJob");
-          } else if (selected === "especialista") {
-            router.push("/SpecialistCategory");
-          }
+          router.push({
+            pathname: "/register/Location",
+            params: { userType: selected }
+          });
         }}
       >
         <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
       </TouchableOpacity>
-    </View>
+      </RegistrationLayout>
   );
 }

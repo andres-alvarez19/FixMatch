@@ -14,7 +14,7 @@ export default function RegisterForm({ showPassword, onShowPassword, showRepeatP
   return (
     <>
       {/* Nombre y Apellido */}
-      <View className="flex-row w-full mb-2 space-x-2">
+      <View className="flex-row w-full mb-2 mx-2 space-x-2 ">
         <View className="flex-1">
           <Text className="mb-1 text-base text-black">Nombre</Text>
           <TextInput
@@ -90,7 +90,7 @@ export default function RegisterForm({ showPassword, onShowPassword, showRepeatP
       {/* Botón */}
       <TouchableOpacity 
         className="w-full bg-yellow-300 rounded-lg py-3 mt-4 mb-2"
-        onPress={() => router.push('/UserTypeForm')}
+        onPress={() => router.push('/register/UserTypeForm')}
       >
         <Text className="text-center text-lg text-[#1A2341] font-medium">Registrar</Text>
       </TouchableOpacity>

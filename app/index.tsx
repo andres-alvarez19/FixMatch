@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
-import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm";
+import LoginForm from "./login/LoginForm";
+import RegisterForm from "./register/RegisterForm";
 
 export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
