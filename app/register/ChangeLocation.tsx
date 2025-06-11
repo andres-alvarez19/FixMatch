@@ -4,7 +4,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MapView, { Circle, Marker, Region } from "react-native-maps";
-import RegistrationLayout from "../../layouts/RegistrationLayout";
 
 interface Suggestion {
   display_name: string;
@@ -145,7 +144,7 @@ export default function ChangeLocationScreen() {
   };
 
   return (
-    <RegistrationLayout currentStep={2} totalSteps={5} showLogoTitle={false}>
+    <>
       {loading || !location ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#13c6a0" />
@@ -277,6 +276,6 @@ export default function ChangeLocationScreen() {
           </KeyboardAvoidingView>
         </>
       )}
-    </RegistrationLayout>
+    </>
   );
 } 

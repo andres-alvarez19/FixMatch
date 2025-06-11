@@ -12,7 +12,7 @@ interface ProgressHeaderProps {
 
 export default function ProgressHeader({ currentStep, totalSteps, onBack, showLabel = false }: ProgressHeaderProps) {
   return (
-    <View className="mb-2 pt-2">
+    <View className="mb-2 mt-10 pt-2">
       <ProgressBar currentStep={currentStep} totalSteps={totalSteps} showLabel={showLabel} />
       <TouchableOpacity
         className="left-0 top-1/2 -translate-y-1/2"
