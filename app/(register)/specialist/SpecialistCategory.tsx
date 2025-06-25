@@ -1,3 +1,4 @@
+import LogoHeader from "@/components/LogoHeader";
 import { router } from "expo-router";
 import {
   Car,
@@ -11,7 +12,6 @@ import {
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import RegistrationLayout from "@/layouts/RegistrationLayout";
 
 const servicios = [
   { key: "plomeria", label: "Plomería", icon: <Droplets size={28} color="#222" /> },
@@ -25,7 +25,7 @@ const servicios = [
 ];
 
 export default function ServiciosScreen() {
-  const [selected, setSelected] = useState<string[]>(["plomeria", "gasfiter"]);
+  const [selected, setSelected] = useState<string[]>([]);
 
   const toggleServicio = (key: string) => {
     setSelected((prev) =>
@@ -34,9 +34,10 @@ export default function ServiciosScreen() {
   };
 
   return (
-      <RegistrationLayout currentStep={3} totalSteps={6}>
+    <View className="flex-1 p-6 pt-0 bg-[#FFFDEB]">
+      <LogoHeader showTitle={true} height={60} width={60} />
       {/* Título */}
-      <Text className="text-3xl font-bold text-cyan-500 text-center p-0 mt-0 mb-4">
+      <Text className="text-3xl font-bold text-cyan-500 text-center p-0 mt-4 mb-4">
         ¿Que servicios ofreces?
       </Text>
 
@@ -58,16 +59,24 @@ export default function ServiciosScreen() {
 
       {/* Botón continuar */}
       <TouchableOpacity
-        className="w-full bg-yellow-300 rounded-lg py-3 mt-2"
+        className={`w-full rounded-lg py-3 mt-0 ${
+          selected.length === 0 ? "bg-gray-200" : "bg-yellow-300"
+        }`}
         disabled={selected.length === 0}
         onPress={() => {
           if (selected.length > 0) {
-            router.push("/register/specialist/JobRegisterForm");
+            router.push({ pathname: "./JobRegisterForm", params: { jobTypes: JSON.stringify(selected) } });
           }
         }}
       >
-        <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
+        <Text
+          className={`text-center text-lg font-medium ${
+            selected.length === 0 ? "text-gray-500" : "text-[#1A2341]"
+          }`}
+        >
+          Continuar
+        </Text>
       </TouchableOpacity>
-    </RegistrationLayout>
+    </View>
   );
 }

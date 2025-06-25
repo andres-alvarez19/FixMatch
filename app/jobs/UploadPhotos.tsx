@@ -1,17 +1,24 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
-import RegistrationLayout from '../../layouts/RegistrationLayout';
+import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
 
 const NUM_PHOTOS = 9;
 
 export default function UploadPhotos() {
   const [photos, setPhotos] = useState<(string | null)[]>(Array(NUM_PHOTOS).fill(null));
+  const router = useRouter();
+
+  // Cálculo dinámico del ancho de la caja
+  const screenWidth = Dimensions.get('window').width;
+  const box32 = 128 * 3 + 32;
+  const useW32 = screenWidth >= box32;
+  const boxWidth = useW32 ? 128 : 112;
+  const boxClass = useW32 ? 'w-32' : 'w-28';
 
   const pickImage = async (index: number) => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 5],
       quality: 0.7,
@@ -26,7 +33,7 @@ export default function UploadPhotos() {
   const renderPhotoBox = (item: string | null, index: number) => (
     <View
       key={index}
-      className="w-28 h-32 bg-[#E9E9E9] rounded-xl border-2 border-gray-300 m-2 flex justify-center items-center relative"
+      className={`${boxClass} h-44 bg-[#E9E9E9] rounded-xl border-2 border-gray-300 mx-1 my-2 flex justify-center items-center relative`}
     >
       {item ? (
         <Image source={{ uri: item }} className="w-full h-full rounded-xl" />
@@ -42,22 +49,32 @@ export default function UploadPhotos() {
   );
 
   return (
-    <RegistrationLayout currentStep={5} totalSteps={6} showLogoTitle={true}>
-      <Text className="text-3xl font-bold text-cyan-400 text-center mb-4">Sube fotos de tus trabajos en orden</Text>
-
+    <View className="flex-1 px-6 pt-12 bg-[#FFFDEB]">
+      {/* Header */}
+      <View className="h-16 flex-row items-center justify-start mb-20">
+        <TouchableOpacity
+            onPress={() => router.back()}
+        >
+            <Ionicons name="chevron-back" size={28} color="#888" />
+        </TouchableOpacity>
+      </View>
+      
+      {/* Título */}
+      <Text className="text-3xl font-bold text-cyan-500 text-center mt-20 mb-4">
+        Sube fotos de tu problema
+      </Text>
       {/* Grid de fotos */}
-      <View className="flex-row flex-wrap justify-center mt-2 mb-2">
+      <View className="flex-row flex-wrap justify-center mt-2 mb-2 w-full ">
         {photos.map((item, idx) => renderPhotoBox(item, idx))}
       </View>
-
       {/* Botón continuar */}
       <TouchableOpacity
-        className={`w-full rounded-xl py-3 mt-4 ${photos.filter((p) => !!p).length >= 2 ? 'bg-[#FEDF70]' : 'bg-gray-200'}`}
-        disabled={photos.filter((p) => !!p).length < 2}
-        onPress={() => {/* Aquí puedes manejar el submit */}}
+        className={`w-full rounded-xl py-3 mt-4 ${photos.filter((p) => !!p).length >= 3 ? 'bg-[#FEDF70]' : 'bg-gray-200'}`}
+        disabled={photos.filter((p) => !!p).length < 3}
+        onPress={() => router.push("./RequestSuccess")}
       >
         <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
       </TouchableOpacity>
-    </RegistrationLayout>
+    </View>
   );
 } 

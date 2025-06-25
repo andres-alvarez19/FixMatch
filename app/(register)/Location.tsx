@@ -1,9 +1,9 @@
+import LogoHeader from "@/components/LogoHeader";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MapView, { Circle, Marker } from "react-native-maps";
-import RegistrationLayout from "../../layouts/RegistrationLayout";
 
 export default function ConfirmLocationScreen() {
   const router = useRouter();
@@ -45,8 +45,9 @@ export default function ConfirmLocationScreen() {
   }, []);
 
   return (
-    <RegistrationLayout currentStep={2} totalSteps={6}>
-      <Text className="text-3xl font-bold text-cyan-500 text-center mt-0 mb-2">
+    <View className="flex-1 p-6 bg-[#FFFDEB]">
+      <LogoHeader showTitle={true} height={60} width={60} />
+      <Text className="text-3xl font-bold text-cyan-500 text-center mt-4 mb-2">
         ¿Es correcta tu ubicacion?
       </Text>
       <Text className="text-center text-base text-black mb-2 font-semibold">
@@ -54,7 +55,7 @@ export default function ConfirmLocationScreen() {
       </Text>
 
       {/* Mapa */}
-      <View className="border-2 border-cyan-400 rounded-xl overflow-x-scroll mb-2" style={{ height: 320 }}>
+      <View className="border-2 border-cyan-400 rounded-xl overflow-hidden mb-2" style={{ height: 320 }}>
         {loading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#13c6a0" />
@@ -90,25 +91,23 @@ export default function ConfirmLocationScreen() {
         ) : (
           <Text className="text-center text-gray-500 mt-10">No se pudo obtener la ubicación</Text>
         )}
-          {/* Dirección */}
-          <TextInput
-              className="px-3 py-2 bg-white overflow-hidden rounded-lg border border-gray-300"
-              value={address}
-              placeholder="Dirección"
-              editable={false}
-          />
+        {/* Dirección */}
+        <TextInput
+          className="px-3 py-2 bg-white overflow-hidden rounded-lg border border-gray-300"
+          value={address}
+          placeholder="Dirección"
+          editable={false}
+        />
       </View>
-
-
 
       {/* Botones */}
       <TouchableOpacity 
         className="w-full bg-yellow-300 rounded-lg py-3 mb-2"
         onPress={() => {
           if (userType === "client") {
-            router.push("/register/client/OptionalNewJob");
+            router.push("/client/OptionalNewJob");
           } else if (userType === "specialist") {
-            router.push("/register/specialist/SpecialistCategory");
+            router.push("/specialist/SpecialistCategory");
           }
         }}
       >
@@ -118,13 +117,13 @@ export default function ConfirmLocationScreen() {
         className="w-full bg-gray-200 rounded-lg py-3"
         onPress={() => {
           router.push({
-            pathname: "/register/ChangeLocation",
+            pathname: "/ChangeLocation",
             params: { userType }
           });
         }}
       >
         <Text className="text-center text-lg text-[#1A2341] font-medium">Elegir otra ubicacion</Text>
       </TouchableOpacity>
-    </RegistrationLayout>
+    </View>
   );
 }

@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -144,7 +143,7 @@ export default function ChangeLocationScreen() {
   };
 
   return (
-    <>
+    <View className="flex-1">
       {loading || !location ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#13c6a0" />
@@ -221,61 +220,28 @@ export default function ChangeLocationScreen() {
               )}
             </View>
           </View>
-          {/* Botón para centrar el mapa */}
-          <TouchableOpacity
-            className="absolute bg-white rounded-full w-12 h-12 justify-center items-center shadow-md z-20"
-            style={{ bottom: 90, right: 30 }}
-            onPress={async () => {
-              if (location && mapRef.current) {
-                const region = {
-                  latitude: location.coords.latitude,
-                  longitude: location.coords.longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                };
-                mapRef.current.animateToRegion(region, 500);
-                setSelectedLocation({
-                  latitude: location.coords.latitude,
-                  longitude: location.coords.longitude,
-                });
-                // Actualizar dirección
-                let addr = await Location.reverseGeocodeAsync({
-                  latitude: location.coords.latitude,
-                  longitude: location.coords.longitude,
-                });
-                if (addr.length > 0) {
-                  const dir = `${addr[0].street || ""} ${addr[0].name || ""} ${addr[0].city || ""}`.trim();
-                  setAddress(dir);
-                  setAddressInput(dir);
-                }
-              }
-            }}
-          >
-            <Ionicons name="locate" size={28} color="#13c6a0" />
-          </TouchableOpacity>
-          {/* Overlay inferior: botón confirmar */}
+          {/* Overlay inferior: Botón continuar */}
           <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-            className="absolute left-0 right-0 pb-6 items-center"
-            style={{ bottom: 0 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={90}
+            className="absolute bottom-0 left-0 right-0 bg-transparent px-6 pb-6 pt-2"
           >
             <TouchableOpacity
-              className={`w-[90%] rounded-2xl py-4 items-center mb-1 ${isGeocoding ? 'bg-[#f8f7d2]' : 'bg-[#fedf70]'}`}
+              className="w-full bg-yellow-300 rounded-lg py-3 shadow-lg"
+              disabled={isGeocoding}
               onPress={() => {
-                if (isGeocoding) return;
                 if (userType === "client") {
-                  router.push("/register/client/OptionalNewJob");
+                  router.push("/client/OptionalNewJob");
                 } else if (userType === "specialist") {
-                  router.push("/register/specialist/SpecialistCategory");
+                  router.push("/specialist/SpecialistCategory");
                 }
               }}
-              disabled={isGeocoding}
             >
-              <Text className="text-black text-lg font-bold">Confirmar ubicación</Text>
+              <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
             </TouchableOpacity>
           </KeyboardAvoidingView>
         </>
       )}
-    </>
+    </View>
   );
 } 

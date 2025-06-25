@@ -4,7 +4,7 @@
     "slug": "FixMatch",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/Headlineless-logo.png",
     "scheme": "fixmatch",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -12,21 +12,21 @@
       "supportsTablet": true
     },
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/Headlineless-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FFFDEB"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/Headlineless-logo.png",
+        "backgroundColor": "#FFFDEB"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/Headlineless-logo.png"
     },
     "plugins": [
       "expo-router",
@@ -36,7 +36,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#FFFDEB"
         }
       ]
     ],

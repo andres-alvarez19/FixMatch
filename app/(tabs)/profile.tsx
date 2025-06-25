@@ -1,8 +1,10 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons"
+
+import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
 
-export default function EditProfileSections() {
+
+const ProfileScreen = () => {
     const router = useRouter()
 
     const renderStars = (rating: number) => {
@@ -33,16 +35,15 @@ export default function EditProfileSections() {
                 <View
                     className="h-80 px-6 pt-12 pb-6 rounded-b-3xl"
                     style={{
-                        backgroundColor: "#4A5568", // Fallback para Nativewind
+                        background: "linear-gradient(135deg, #4A5568 0%, #2D3748 50%, #1A202C 100%)",
+                        backgroundColor: "#4A5568", // Fallback for React Native
                     }}
                 >
-                    {/* Back Button */}
-                    <TouchableOpacity className="absolute top-12 left-6 z-10" onPress={() => router.back()}>
-                        <Ionicons name="chevron-back" size={28} color="white" />
-                    </TouchableOpacity>
-
                     {/* Profile Image and Info */}
-                    <View className="flex-row items-start mb-8 mt-8">
+                    <TouchableOpacity 
+                        className="flex-row items-start mb-8"
+                        onPress={() => router.push("/profile/EditProfile")}
+                    >
                         <Image
                             source={{ uri: "https://randomuser.me/api/portraits/men/22.jpg" }}
                             className="w-20 h-20 rounded-full mr-4"
@@ -51,7 +52,7 @@ export default function EditProfileSections() {
                             <Text className="text-white text-2xl font-bold mb-1">Orlando Diggs</Text>
                             <Text className="text-white/80 text-base">California, USA</Text>
                         </View>
-                    </View>
+                    </TouchableOpacity>
 
                     {/* Stats Cards */}
                     <View className="flex-row justify-between mb-4">
@@ -67,6 +68,15 @@ export default function EditProfileSections() {
                             <Ionicons name="briefcase-outline" size={20} color="#666" />
                         </View>
                     </View>
+
+                    {/* Edit Profile Button */}
+                    <TouchableOpacity
+                        className="absolute top-12 right-6 flex-row items-center"
+                        onPress={() => router.push("/profile/EditProfileSections")}
+                    >
+                        <Text className="text-white text-base mr-2">Edit profile</Text>
+                        <Ionicons name="pencil" size={20} color="white" />
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -74,14 +84,9 @@ export default function EditProfileSections() {
             <View className="px-6 py-6">
                 {/* About Me */}
                 <View className="mb-8">
-                    <View className="flex-row items-center justify-between mb-4">
-                        <View className="flex-row items-center">
-                            <Ionicons name="person-circle-outline" size={24} color="#FFA500" />
-                            <Text className="text-xl font-bold text-gray-800 ml-3">About me</Text>
-                        </View>
-                        <TouchableOpacity>
-                            <Ionicons name="pencil" size={20} color="#FFA500" />
-                        </TouchableOpacity>
+                    <View className="flex-row items-center mb-4">
+                        <Ionicons name="person-circle-outline" size={24} color="#FFA500" />
+                        <Text className="text-xl font-bold text-gray-800 ml-3">About me</Text>
                     </View>
                     <Text className="text-gray-600 text-base leading-6">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lectus id commodo egestas metus interdum dolor.
@@ -90,40 +95,23 @@ export default function EditProfileSections() {
 
                 {/* Education */}
                 <View className="mb-8">
-                    <View className="flex-row items-center justify-between mb-4">
-                        <View className="flex-row items-center">
-                            <Ionicons name="school-outline" size={24} color="#FFA500" />
-                            <Text className="text-xl font-bold text-gray-800 ml-3">Education</Text>
-                        </View>
-                        <TouchableOpacity>
-                            <Ionicons name="add-circle-outline" size={24} color="#FFA500" />
-                        </TouchableOpacity>
+                    <View className="flex-row items-center mb-4">
+                        <Ionicons name="school-outline" size={24} color="#FFA500" />
+                        <Text className="text-xl font-bold text-gray-800 ml-3">Education</Text>
                     </View>
 
                     <View className="bg-white rounded-2xl p-4 shadow-sm">
-                        <View className="flex-row items-start justify-between">
-                            <View className="flex-1">
-                                <Text className="text-lg font-bold text-gray-800 mb-1">Information Technology</Text>
-                                <Text className="text-gray-600 text-base mb-1">University of Oxford</Text>
-                                <Text className="text-gray-500 text-sm">Sep 2010 - Aug 2013 • 5 Years</Text>
-                            </View>
-                            <TouchableOpacity className="ml-4">
-                                <Ionicons name="pencil" size={20} color="#FFA500" />
-                            </TouchableOpacity>
-                        </View>
+                        <Text className="text-lg font-bold text-gray-800 mb-1">Information Technology</Text>
+                        <Text className="text-gray-600 text-base mb-1">University of Oxford</Text>
+                        <Text className="text-gray-500 text-sm">Sep 2010 - Aug 2013 • 5 Years</Text>
                     </View>
                 </View>
 
                 {/* Resume */}
                 <View className="mb-8">
-                    <View className="flex-row items-center justify-between mb-4">
-                        <View className="flex-row items-center">
-                            <Ionicons name="document-text-outline" size={24} color="#FFA500" />
-                            <Text className="text-xl font-bold text-gray-800 ml-3">Resume</Text>
-                        </View>
-                        <TouchableOpacity>
-                            <Ionicons name="add-circle-outline" size={24} color="#FFA500" />
-                        </TouchableOpacity>
+                    <View className="flex-row items-center mb-4">
+                        <Ionicons name="document-text-outline" size={24} color="#FFA500" />
+                        <Text className="text-xl font-bold text-gray-800 ml-3">Resume</Text>
                     </View>
 
                     <View className="bg-white rounded-2xl p-4 shadow-sm flex-row items-center">
@@ -134,22 +122,14 @@ export default function EditProfileSections() {
                             <Text className="text-gray-800 font-semibold text-base mb-1">Jamet kudasi - CV - UI/UX Designer</Text>
                             <Text className="text-gray-500 text-sm">867 Kb • 14 Feb 2022 at 11:30 am</Text>
                         </View>
-                        <TouchableOpacity className="ml-4">
-                            <MaterialIcons name="delete-outline" size={24} color="#FF6B6B" />
-                        </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Certificates */}
                 <View className="mb-8">
-                    <View className="flex-row items-center justify-between mb-4">
-                        <View className="flex-row items-center">
-                            <Ionicons name="ribbon-outline" size={24} color="#FFA500" />
-                            <Text className="text-xl font-bold text-gray-800 ml-3">Certificates</Text>
-                        </View>
-                        <TouchableOpacity>
-                            <Ionicons name="add-circle-outline" size={24} color="#FFA500" />
-                        </TouchableOpacity>
+                    <View className="flex-row items-center mb-4">
+                        <Ionicons name="ribbon-outline" size={24} color="#FFA500" />
+                        <Text className="text-xl font-bold text-gray-800 ml-3">Certificates</Text>
                     </View>
 
                     <View className="bg-white rounded-2xl p-4 shadow-sm flex-row items-center">
@@ -160,12 +140,11 @@ export default function EditProfileSections() {
                             <Text className="text-gray-800 font-semibold text-base mb-1">Jamet kudasi - CV - UI/UX Designer</Text>
                             <Text className="text-gray-500 text-sm">867 Kb • 14 Feb 2022 at 11:30 am</Text>
                         </View>
-                        <TouchableOpacity className="ml-4">
-                            <MaterialIcons name="delete-outline" size={24} color="#FF6B6B" />
-                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
         </ScrollView>
     )
 }
+
+export default ProfileScreen;

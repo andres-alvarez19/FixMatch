@@ -1,5 +1,6 @@
+import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface LoginFormProps {
@@ -8,6 +9,34 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ showPassword, onShowPassword }: LoginFormProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<any>({});
+  const [formTriedSubmit, setFormTriedSubmit] = useState(false);
+  const router = useRouter();
+
+  const validate = () => {
+    const newErrors: any = {};
+    if (!email.trim()) newErrors.email = "El email es obligatorio";
+    else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = "El email debe ser válido";
+    if (!password) newErrors.password = "La contraseña es obligatoria";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleLogin = () => {
+    setFormTriedSubmit(true);
+    if (validate()) {
+      router.push("./login/LoginLoading");
+    }
+  };
+
+  // Ejecutar validación en cada cambio de campo
+  useEffect(() => {
+    if (formTriedSubmit) validate();
+    // eslint-disable-next-line
+  }, [email, password]);
+
   return (
     <>
       {/* Email */}
@@ -15,9 +44,12 @@ export default function LoginForm({ showPassword, onShowPassword }: LoginFormPro
         <Text className="mb-1 text-base text-black">Email</Text>
         <TextInput
           className="border border-cyan-300 rounded-lg px-3 py-2 bg-white"
-          placeholder="nombre@email.com"
+          placeholder="ejemplo@email.com"
           keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
         />
+        {formTriedSubmit && errors.email && <Text className="text-red-500 text-xs mt-1">{errors.email}</Text>}
       </View>
       {/* Password */}
       <View className="w-full mb-2">
@@ -25,8 +57,10 @@ export default function LoginForm({ showPassword, onShowPassword }: LoginFormPro
         <View className="flex-row items-center border border-cyan-300 rounded-lg bg-white px-3">
             <TextInput
             className="flex-1 py-2"
-            placeholder="******"
+            placeholder="********"
             secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
             />
             <TouchableOpacity onPress={onShowPassword}>
             {showPassword ? (
@@ -35,10 +69,14 @@ export default function LoginForm({ showPassword, onShowPassword }: LoginFormPro
                 <Eye size={20} color="#888" />
             )}
             </TouchableOpacity>
-        </View>      
+        </View>  
+        {formTriedSubmit && errors.password && <Text className="text-red-500 text-xs mt-1">{errors.password}</Text>}
       </View>
       {/* Botón */}
-      <TouchableOpacity className="w-full bg-yellow-300 rounded-lg py-3 mt-4 mb-2">
+      <TouchableOpacity className={`w-full rounded-lg py-3 mt-4 mb-2 ${(formTriedSubmit && Object.keys(errors).length > 0) ? 'bg-gray-200' : 'bg-yellow-300'}`}
+        onPress={handleLogin}
+        disabled={formTriedSubmit && Object.keys(errors).length > 0}
+      >
         <Text className="text-center text-lg text-[#1A2341] font-medium">Iniciar sesion</Text>
       </TouchableOpacity>
       {/* Olvidé contraseña */}
