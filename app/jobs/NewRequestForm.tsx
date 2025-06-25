@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRegister } from "../(register)/RegisterContext";
+import { useCrearSolicitud } from "../../hooks/useCrearSolicitud";
 
 export default function NewRequestForm() {
   const router = useRouter();
@@ -11,6 +13,8 @@ export default function NewRequestForm() {
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState<any>({});
   const [formTriedSubmit, setFormTriedSubmit] = useState(false);
+  const { crearSolicitud, loading: creando, error: errorCrear } = useCrearSolicitud();
+  const { registerData } = useRegister();
 
   const validate = () => {
     const newErrors: any = {};
@@ -21,10 +25,22 @@ export default function NewRequestForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setFormTriedSubmit(true);
     if (validate()) {
-      router.push("/jobs/UploadPhotos");
+      if (!registerData?.id) {
+        alert('Error: No se encontró el ID de usuario.');
+        return;
+      }
+      const solicitudId = await crearSolicitud({
+        especialidad: specialty,
+        nombreSolicitud: requestName,
+        descripcion: description,
+        usuarioId: registerData.id,
+      });
+      if (solicitudId) {
+        router.push({ pathname: "/jobs/UploadPhotos", params: { solicitudId } });
+      }
     }
   };
 
@@ -78,13 +94,16 @@ export default function NewRequestForm() {
       />
       {formTriedSubmit && errors.description && <Text className="text-red-500 text-xs mb-2">{errors.description}</Text>}
 
+      {/* Mostrar error si ocurre */}
+      {errorCrear && <Text className="text-red-500 text-xs mb-2">{errorCrear}</Text>}
+
       {/* Botón continuar */}
       <TouchableOpacity
         className={`w-full rounded-lg py-3 mb-2 ${(formTriedSubmit && Object.keys(errors).length > 0) ? 'bg-gray-200' : 'bg-yellow-300'}`}
         onPress={handleContinue}
-        disabled={formTriedSubmit && Object.keys(errors).length > 0}
+        disabled={formTriedSubmit && Object.keys(errors).length > 0 || creando}
       >
-        <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
+        <Text className="text-center text-lg text-[#1A2341] font-medium">{creando ? "Creando..." : "Continuar"}</Text>
       </TouchableOpacity>
     </View>
   );

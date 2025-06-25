@@ -1,13 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import api from "../../api";
 
 const NUM_PHOTOS = 9;
 
 export default function UploadPhotos() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
   const [photos, setPhotos] = useState<(string | null)[]>(Array(NUM_PHOTOS).fill(null));
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // ID recibido por parámetro
+  const projectId = params.projectId as string | undefined;
+  const solicitudId = params.solicitudId as string | undefined;
 
   // Cálculo dinámico del ancho de la caja
   const screenWidth = Dimensions.get('window').width;
@@ -48,6 +57,46 @@ export default function UploadPhotos() {
     </View>
   );
 
+  const handleUploadPhotos = async () => {
+    setCargando(true);
+    setError(null);
+    try {
+      let formData = new FormData();
+      let url = '';
+      if (projectId) {
+        formData.append('projectId', projectId);
+        url = '/api/proyectos/fotos';
+      } else if (solicitudId) {
+        formData.append('solicitudId', solicitudId);
+        url = '/api/solicitudes/fotos';
+      } else {
+        throw new Error('No se recibió un ID válido para subir las fotos');
+      }
+      // Convertir las URIs a objetos tipo File para FormData
+      const files = photos.filter(Boolean).map((uri, idx) => ({
+        uri,
+        name: `foto_${idx}.jpg`,
+        type: 'image/jpeg',
+      }));
+      files.forEach((file) => {
+        // @ts-ignore
+        formData.append('fotos', file);
+      });
+      // Subir fotos a la API
+      const response = await api.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (!response.ok) throw new Error('Error al subir las fotos');
+      router.push('./RegisterLoading');
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   return (
     <View className="flex-1 p-6 pt-0 bg-[#FFFDEB]">
       
@@ -63,11 +112,12 @@ export default function UploadPhotos() {
       {/* Botón continuar */}
       <TouchableOpacity
         className={`w-full rounded-xl py-3 mt-4 ${photos.filter((p) => !!p).length >= 2 ? 'bg-[#FEDF70]' : 'bg-gray-200'}`}
-        disabled={photos.filter((p) => !!p).length < 2}
-        onPress={() => router.push('./RegisterLoading')}
+        disabled={photos.filter((p) => !!p).length < 2 || cargando}
+        onPress={handleUploadPhotos}
       >
-        <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
+        <Text className="text-center text-lg text-[#1A2341] font-medium">{cargando ? "Subiendo..." : "Continuar"}</Text>
       </TouchableOpacity>
+      {error && <Text className="text-red-500 text-center mb-2">{error}</Text>}
     </View>
   );
 } 

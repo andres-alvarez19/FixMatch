@@ -4,22 +4,9 @@ import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageProgressBar from '../../components/ImageProgressBar';
-import { useUser } from '../../contexts/UserContext';
-import { Trabajo, useListarTrabajos } from '../../hooks/useListarTrabajos';
-import ClientSwipe from '../client/ClientSwipe';
-import SpecialistSwipe from '../specialist/SpecialistSwipe';
+import { Trabajo } from '../../hooks/useListarTrabajos';
 
-/**
- * NOTA sobre el cálculo del padding inferior
- * --------------------------------------------------
- * - `useBottomTabBarHeight()` devuelve la altura TOTAL del contenedor
- *   que expo‑router renderiza para la tab bar (incluye pt / pb + safe‑area).
- * - El botón flotante (w‑14 / h‑14) está posicionado `absolute -top-6` en
- *   `BottomNavbar.tsx`: eso lo hace sobresalir px por encima del navbar.
- * - Para que las tarjetas no invadan ese espacio, sumamos un margen extra
- *   igual al desplazamiento negativo (24 px) + un pequeño colchón.
- */
-const EXTRA_BOTTOM_PADDING = 42; // px ajusta si cambias el -top-6 o el tamaño del botón
+const EXTRA_BOTTOM_PADDING = 42;
 
 const Card = ({ card }: { card: Trabajo }) => {
   const [currentImage, setCurrentImage] = useState(0);
@@ -70,17 +57,14 @@ const Card = ({ card }: { card: Trabajo }) => {
   );
 };
 
-const HomeScreen = () => {
-  const { trabajos, loading, error, refetch } = useListarTrabajos();
-  const { id, userType } = useUser();
+interface SpecialistSwipeProps {
+  trabajos: Trabajo[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+}
 
-  if (userType === 'cliente') {
-    return <ClientSwipe />;
-  }
-  if (userType === 'especialista') {
-    return <SpecialistSwipe trabajos={trabajos} loading={loading} error={error} refetch={refetch} />;
-  }
-
+const SpecialistSwipe = ({ trabajos, loading, error, refetch }: SpecialistSwipeProps) => {
   if (loading) {
     return (
       <SafeAreaView edges={['top']} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -128,4 +112,4 @@ const HomeScreen = () => {
   );
 };
 
-export default HomeScreen;
+export default SpecialistSwipe; 

@@ -1,16 +1,22 @@
 import LogoHeader from "@/components/LogoHeader";
+import { useRegistrarUsuario } from "@/hooks/useRegistrarUsuario";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MapView, { Circle, Marker } from "react-native-maps";
+import { useUser } from '../../contexts/UserContext';
+import { useRegister } from "./RegisterContext";
 
 export default function ConfirmLocationScreen() {
   const router = useRouter();
   const { userType } = useLocalSearchParams<{ userType: "client" | "specialist" }>();
+  const { registerData, updateRegisterData } = useRegister();
+  const { registrarUsuario, loading: loadingUsuario, error: errorUsuario } = useRegistrarUsuario();
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [address, setAddress] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const { setUser } = useUser();
 
   const getDescription = () => {
     if (userType === "client") {
@@ -103,16 +109,24 @@ export default function ConfirmLocationScreen() {
       {/* Botones */}
       <TouchableOpacity 
         className="w-full bg-yellow-300 rounded-lg py-3 mb-2"
-        onPress={() => {
-          if (userType === "client") {
-            router.push("/client/OptionalNewJob");
-          } else if (userType === "specialist") {
-            router.push("/specialist/SpecialistCategory");
+        onPress={async () => {
+          // Enviar usuario a la API y guardar el ID
+          const id = await registrarUsuario(registerData);
+          if (id) {
+            updateRegisterData({ id });
+            setUser({ ...registerData, id });
+            if (userType === "client") {
+              router.push("/client/OptionalNewJob");
+            } else if (userType === "specialist") {
+              router.push("/specialist/SpecialistCategory");
+            }
           }
         }}
+        disabled={loadingUsuario}
       >
-        <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
+        <Text className="text-center text-lg text-[#1A2341] font-medium">{loadingUsuario ? "Enviando..." : "Continuar"}</Text>
       </TouchableOpacity>
+      {errorUsuario && <Text className="text-red-500 text-center mb-2">{errorUsuario}</Text>}
       <TouchableOpacity 
         className="w-full bg-gray-200 rounded-lg py-3"
         onPress={() => {

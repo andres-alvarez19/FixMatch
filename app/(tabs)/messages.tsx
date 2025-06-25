@@ -1,21 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import api from "../../api";
 import NoMessages from '../../components/NoMessages';
+import { useUser } from '../../contexts/UserContext';
 
-const mockMessages = [
-    { id: '1', name: 'Andy Robertson', avatar: 'https://randomuser.me/api/portraits/men/32.jpg', lastMessage: 'Oh sí, por favor envía tu CV/Res...', time: 'hace 5m', unread: 2 },
-    { id: '2', name: 'Giorgio Chiellini', avatar: 'https://randomuser.me/api/portraits/men/33.jpg', lastMessage: 'Hola señor, buenos días', time: 'hace 30m', unread: 0 },
-    { id: '3', name: 'Alex Morgan', avatar: 'https://randomuser.me/api/portraits/women/44.jpg', lastMessage: 'Vi la vacante de UI/UX Designer...', time: '09:30 am', unread: 0 },
-    { id: '4', name: 'Megan Rapinoe', avatar: 'https://randomuser.me/api/portraits/women/45.jpg', lastMessage: 'Vi la vacante de UI/UX Designer...', time: '01:00 pm', unread: 0 },
-    { id: '5', name: 'Alessandro Bastoni', avatar: 'https://randomuser.me/api/portraits/men/46.jpg', lastMessage: 'Vi la vacante de UI/UX Designer...', time: '06:00 pm', unread: 0 },
-    { id: '6', name: 'Ilkay Gundogan', avatar: 'https://randomuser.me/api/portraits/men/47.jpg', lastMessage: 'Vi la vacante de UI/UX Designer...', time: 'Ayer', unread: 0 },
-];
-  
-type Message = typeof mockMessages[0];
+interface Chat {
+  id: string;
+  name: string;
+  avatar: string;
+  lastMessage: string;
+  time: string;
+  unread: number;
+}
 
-const MessageItem = ({ item, onDelete }: { item: Message; onDelete: () => void }) => {
+const MessageItem = ({ item, onDelete }: { item: Chat; onDelete: () => void }) => {
     const [translateX] = useState(new Animated.Value(0));
     const [showDelete, setShowDelete] = useState(false);
   
@@ -79,14 +79,39 @@ const MessageItem = ({ item, onDelete }: { item: Message; onDelete: () => void }
 };
 
 const MessagesScreen = () => {
-  const [messages, setMessages] = useState(mockMessages);
+  const { id, userType } = useUser();
+  const [messages, setMessages] = useState<Chat[]>([]);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id: string) => {
-    setMessages((prev) => prev.filter((msg) => msg.id !== id));
+  useEffect(() => {
+    // TODO: Agrega autenticación si es necesario
+    const fetchChats = async () => {
+      try {
+        const res = await api.get('/api/chats');
+        const data = await res.data;
+        setMessages(data);
+      } catch (error) {
+        // Manejo de error
+        setMessages([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchChats();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    // Elimina el chat en la API
+    try {
+      await api.delete(`/api/chats/${id}`);
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
+    } catch (error) {
+      // Manejo de error
+    }
   };
 
-  const filteredMessages = messages.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredMessages = messages.filter((m) => m.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <View className="flex-1 w-full bg-[#FFFEF7]">
@@ -102,7 +127,9 @@ const MessagesScreen = () => {
           />
         </View>
       </View>
-      {filteredMessages.length === 0 ? (
+      {loading ? (
+        <Text className="text-center mt-10 text-gray-400">Cargando chats...</Text>
+      ) : filteredMessages.length === 0 ? (
         <NoMessages />
       ) : (
         <FlatList

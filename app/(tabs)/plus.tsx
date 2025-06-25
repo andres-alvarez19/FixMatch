@@ -1,17 +1,17 @@
-import LogoHeader from "@/components/LogoHeader";
 import { useRouter } from "expo-router";
 import {
-    Car,
-    Construction,
-    Droplets,
-    Hammer,
-    Paintbrush,
-    Sparkles,
-    Wrench,
-    Zap
+  Car,
+  Construction,
+  Droplets,
+  Hammer,
+  Paintbrush,
+  Sparkles,
+  Wrench,
+  Zap
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useUser } from '../../contexts/UserContext';
 
 const servicios = [
   { key: "plomeria", label: "Plomería", icon: <Droplets size={28} color="#222" /> },
@@ -25,6 +25,7 @@ const servicios = [
 ];
 
 export default function PlusScreen() {
+  const { id, userType } = useUser();
   const [selected, setSelected] = useState<string | null>(null);
   const router = useRouter();
 

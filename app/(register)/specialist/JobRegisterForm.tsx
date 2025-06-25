@@ -1,14 +1,17 @@
 import LogoHeader from "@/components/LogoHeader";
+import { useSubirProyecto } from "@/hooks/useSubirProyecto";
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from "@react-native-picker/picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRegister } from "../RegisterContext";
 
 export default function JobRegisterForm() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { registerData } = useRegister();
   let jobTypes: string[] = [
     "Plomeria",
     "Electricidad",
@@ -34,6 +37,7 @@ export default function JobRegisterForm() {
   const [showDate, setShowDate] = useState(false);
   const [errors, setErrors] = useState<any>({});
   const [formTriedSubmit, setFormTriedSubmit] = useState(false);
+  const { subirProyecto, cargando, error, exito } = useSubirProyecto();
 
   const validate = () => {
     const newErrors: any = {};
@@ -45,10 +49,25 @@ export default function JobRegisterForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setFormTriedSubmit(true);
     if (validate()) {
-      router.push("../UploadPhotos");
+      if (!registerData.id) {
+        alert('Error: No se encontró el ID de usuario.');
+        return;
+      }
+      const projectId = await subirProyecto(
+        {
+          nombre: projectName,
+          descripcion: description,
+          fecha: date.toISOString().split('T')[0],
+          usuarioId: registerData.id,
+        },
+        []
+      );
+      if (projectId) {
+        router.push({ pathname: "../UploadPhotos", params: { projectId } });
+      }
     }
   };
 
@@ -131,10 +150,11 @@ export default function JobRegisterForm() {
       <TouchableOpacity
         className={`w-full rounded-lg py-3 mb-2 ${(formTriedSubmit && Object.keys(errors).length > 0) ? 'bg-gray-200' : 'bg-yellow-300'}`}
         onPress={handleContinue}
-        disabled={formTriedSubmit && Object.keys(errors).length > 0}
+        disabled={formTriedSubmit && Object.keys(errors).length > 0 || cargando}
       >
-        <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
+        <Text className="text-center text-lg text-[#1A2341] font-medium">{cargando ? "Enviando..." : "Continuar"}</Text>
       </TouchableOpacity>
+      {error && <Text className="text-red-500 text-center mb-2">{error}</Text>}
     </View>
   );
 } 

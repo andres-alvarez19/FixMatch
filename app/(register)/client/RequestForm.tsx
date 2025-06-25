@@ -1,8 +1,10 @@
 import LogoHeader from "@/components/LogoHeader";
+import { useCrearSolicitud } from "@/hooks/useCrearSolicitud";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRegister } from "../RegisterContext";
 
 const specialties = [
   "Plomeria",
@@ -22,6 +24,8 @@ export default function RequestForm() {
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState<any>({});
   const [formTriedSubmit, setFormTriedSubmit] = useState(false);
+  const { crearSolicitud, loading, error } = useCrearSolicitud();
+  const { registerData } = useRegister();
 
   const validate = () => {
     const newErrors: any = {};
@@ -32,10 +36,22 @@ export default function RequestForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setFormTriedSubmit(true);
     if (validate()) {
-      router.push("/UploadPhotos");
+      if (!registerData.id) {
+        alert('Error: No se encontró el ID de usuario.');
+        return;
+      }
+      const solicitudId = await crearSolicitud({
+        especialidad: selectedSpecialty,
+        nombreSolicitud: requestName,
+        descripcion: description,
+        usuarioId: registerData.id,
+      });
+      if (solicitudId) {
+        router.push({ pathname: "/UploadPhotos", params: { solicitudId } });
+      }
     }
   };
 
@@ -93,10 +109,11 @@ export default function RequestForm() {
       <TouchableOpacity
         className={`w-full rounded-lg py-3 mb-2 ${(formTriedSubmit && Object.keys(errors).length > 0) ? 'bg-gray-200' : 'bg-yellow-300'}`}
         onPress={handleContinue}
-        disabled={formTriedSubmit && Object.keys(errors).length > 0}
+        disabled={formTriedSubmit && Object.keys(errors).length > 0 || loading}
       >
-        <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
+        <Text className="text-center text-lg text-[#1A2341] font-medium">{loading ? "Enviando..." : "Continuar"}</Text>
       </TouchableOpacity>
+      {error && <Text className="text-red-500 text-center mb-2">{error}</Text>}
     </View>
   );
 } 

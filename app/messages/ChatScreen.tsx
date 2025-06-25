@@ -1,78 +1,101 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import api from "../../api";
 
-const mockUser = {
-  name: 'Orlando Diggs',
-  avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
-  online: true,
-};
+interface Message {
+  id: string;
+  text?: string;
+  time: string;
+  fromMe: boolean;
+  avatar?: string;
+  type: 'text' | 'file';
+  file?: {
+    name: string;
+    size: string;
+    type: string;
+  };
+}
 
-const mockMessages = [
-  {
-    id: '1',
-    text: 'Hola señor, buenos días',
-    time: '09:30 am',
-    fromMe: true,
-    type: 'text',
-  },
-  {
-    id: '2',
-    text: 'Buenos días, ¿en qué puedo ayudarte?',
-    time: '09:31 am',
-    fromMe: false,
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    type: 'text',
-  },
-  {
-    id: '3',
-    text: 'Vi la vacante de UI/UX Designer que publicaste en LinkedIn ayer y estoy interesado en unirme a tu empresa.',
-    time: '09:33 am',
-    fromMe: true,
-    type: 'text',
-  },
-  {
-    id: '4',
-    text: '¡Claro! Por favor, envía tu CV aquí',
-    time: '09:35 am',
-    fromMe: false,
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    type: 'text',
-  },
-  {
-    id: '5',
-    file: {
-      name: 'Jamet– CV – UI/UX Designer.PDF',
-      size: '867 Kb',
-      type: 'PDF',
-    },
-    time: '09:33 am',
-    fromMe: true,
-    type: 'file',
-  },
-];
+interface ChatUser {
+  name: string;
+  avatar: string;
+  online: boolean;
+}
 
 const ChatScreen = () => {
-  const [messages, setMessages] = useState(mockMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<ChatUser | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
-  const handleSend = () => {
-    if (input.trim() === '') return;
-    setMessages(prev => [
-      ...prev,
-      {
-        id: (prev.length + 1).toString(),
-        text: input,
-        time: '09:40 am',
-        fromMe: true,
-        type: 'text',
-      },
-    ]);
-    setInput('');
-    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+  // Obtén el chatId de los params
+  const { userId: chatId } = useLocalSearchParams<{ userId: string }>();
+  const pageSize = 20;
+
+  useEffect(() => {
+    setMessages([]);
+    setPage(0);
+    setHasMore(true);
+    fetchMessages(0);
+    fetchUser();
+    // eslint-disable-next-line
+  }, [chatId]);
+
+  const fetchUser = async () => {
+    try {
+      const res = await api.get(`/api/chats/${chatId}`);
+      const data = await res.data;
+      setUser(data);
+    } catch (error) {
+      setUser(null);
+    }
   };
+
+  const fetchMessages = async (pageToLoad: number) => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    try {
+      const res = await api.get(`/api/messages?chatId=${chatId}&page=${pageToLoad}&size=${pageSize}`);
+      const data = await res.data;
+      if (data.length < pageSize) setHasMore(false);
+      setMessages(prev => [...data.reverse(), ...prev]);
+      setPage(pageToLoad + 1);
+    } catch (error) {
+      // Manejo de error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSend = async () => {
+    if (input.trim() === '') return;
+    try {
+      const res = await api.post('/api/messages', { chatId, text: input }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const newMsg = await res.data;
+      setMessages(prev => [...prev, newMsg]);
+      setInput('');
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    } catch (error) {
+      // Manejo de error
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!loading && hasMore) {
+      fetchMessages(page);
+    }
+  };
+
+  // TODO: Aquí puedes agregar WebSocket/SSE para tiempo real si Spring Boot lo soporta
 
   const renderMessage = ({ item }: { item: any }) => {
     if (item.type === 'file') {
@@ -113,12 +136,12 @@ const ChatScreen = () => {
           <Ionicons name="arrow-back-outline" size={28} color="#6B7280" />
         </TouchableOpacity>
         <View className="flex-row items-center flex-1 ml-4">
-          <Image source={{ uri: mockUser.avatar }} className="w-14 h-14 rounded-full mr-4" />
+          {user && <Image source={{ uri: user.avatar }} className="w-14 h-14 rounded-full mr-4" />}
           <View>
-            <Text className="font-bold text-lg text-[#1A2341]">{mockUser.name}</Text>
+            <Text className="font-bold text-lg text-[#1A2341]">{user ? user.name : '...'}</Text>
             <View className="flex-row items-center mt-1">
               <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-              <Text className="text-green-500 text-xs">En línea</Text>
+              <Text className="text-green-500 text-xs">{user && user.online ? 'En línea' : 'Desconectado'}</Text>
             </View>
           </View>
         </View>
@@ -140,6 +163,8 @@ const ChatScreen = () => {
         keyExtractor={item => item.id}
         contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
       />
       {/* Input */}
       <KeyboardAvoidingView

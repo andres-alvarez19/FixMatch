@@ -1,9 +1,11 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRegister } from "./RegisterContext";
 
 export default function RegisterPassword() {
   const params = useLocalSearchParams();
+  const { updateRegisterData } = useRegister();
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [errors, setErrors] = useState<any>({});
@@ -21,6 +23,7 @@ export default function RegisterPassword() {
   const handleContinue = () => {
     setFormTriedSubmit(true);
     if (validate()) {
+      updateRegisterData({ password });
       router.push(`./UserTypeForm?nombre=${encodeURIComponent(params.nombre as string)}&email=${encodeURIComponent(params.email as string)}&telefono=${encodeURIComponent(params.telefono as string)}&password=${encodeURIComponent(password)}`);
     }
   };

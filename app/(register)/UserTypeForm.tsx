@@ -3,9 +3,11 @@ import { router } from "expo-router";
 import { Users, Wrench } from "lucide-react-native";
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useRegister } from "./RegisterContext";
 
 export default function UserTypeScreen() {
   const [selected, setSelected] = useState<"client" | "specialist" | null>("client");
+  const { updateRegisterData } = useRegister();
 
   return (
     <View className="flex-1 p-6 bg-[#FFFDEB]">
@@ -54,6 +56,7 @@ export default function UserTypeScreen() {
         className="w-full bg-yellow-300 rounded-lg py-3 mt-8"
         disabled={!selected}
         onPress={() => {
+          updateRegisterData({ tipoUsuario: selected === "client" ? "cliente" : "especialista" });
           router.push({
             pathname: "/Location",
             params: { userType: selected }

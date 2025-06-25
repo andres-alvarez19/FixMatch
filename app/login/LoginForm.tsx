@@ -2,6 +2,8 @@ import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import api from '../../api';
+import { useUser } from '../../contexts/UserContext';
 
 interface LoginFormProps {
   showPassword: boolean;
@@ -14,6 +16,7 @@ export default function LoginForm({ showPassword, onShowPassword }: LoginFormPro
   const [errors, setErrors] = useState<any>({});
   const [formTriedSubmit, setFormTriedSubmit] = useState(false);
   const router = useRouter();
+  const { setUser } = useUser();
 
   const validate = () => {
     const newErrors: any = {};
@@ -24,10 +27,23 @@ export default function LoginForm({ showPassword, onShowPassword }: LoginFormPro
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setFormTriedSubmit(true);
     if (validate()) {
-      router.push("./login/LoginLoading");
+      try {
+        // Llama a tu backend de login
+        const res = await api.post('/api/login', { email, password });
+        // Suponiendo que la respuesta es { id, tipoUsuario }
+        // Después del login exitoso, obtener el perfil completo
+        const profileRes = await api.get('/api/user/profile');
+        setUser(profileRes.data); // Guarda el perfil completo en el contexto
+        router.push({
+          pathname: "./login/LoginLoading",
+          params: { id: res.data.id, userType: res.data.tipoUsuario }
+        });
+      } catch (e: any) {
+        setErrors({ general: e.response?.data?.message || 'Error de autenticación' });
+      }
     }
   };
 
@@ -83,6 +99,7 @@ export default function LoginForm({ showPassword, onShowPassword }: LoginFormPro
       <TouchableOpacity>
         <Text className="text-center text-black font-semibold mt-2">Olvide la contraseña</Text>
       </TouchableOpacity>
+      {errors.general && <Text className="text-red-500 text-xs mt-1">{errors.general}</Text>}
     </>
   );
 } 

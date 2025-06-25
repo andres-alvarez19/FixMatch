@@ -1,12 +1,18 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, Image, ImageBackground, Text, View } from "react-native";
+import { useUser } from '../../contexts/UserContext';
 
 export default function LoginLoading() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { setUser } = useUser();
 
   useEffect(() => {
+    // Simulación: obtener id y tipoUsuario del backend o de params
+    const id = params.id || 'usuario-demo-id';
+    const userType = params.userType || 'cliente'; // o 'especialista'
+    setUser(id as string, userType as any);
     const timeout = setTimeout(() => {
       router.push({ pathname: "/(tabs)/home", params });
     }, 2000);

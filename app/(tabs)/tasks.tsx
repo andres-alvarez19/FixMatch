@@ -3,63 +3,39 @@ import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
+import { useUser } from '../../contexts/UserContext';
+import { useTasks } from '../../hooks/useTasks';
 
-const mockScheduledTasks = [
-    {
-      id: '1',
-      status: 'En espera',
-      date: 'Viernes - 27 de mayo, 2022',
-      time: '9:30 am',
-      user: {
-        name: 'Dianne Russell',
-        avatar: 'https://randomuser.me/api/portraits/men/34.jpg',
-      },
-    },
-  ];
-  
-  const mockCompletedTasks = [
-      {
-          id: '2',
-          status: 'Completada',
-          date: 'Lunes - 23 de mayo, 2022',
-          time: '11:00 am',
-          user: {
-            name: 'John Doe',
-            avatar: 'https://randomuser.me/api/portraits/men/35.jpg',
-          },
-        },
-  ];
-  
-  const TaskCard = ({ item }: { item: any }) => (
-    <View className="bg-white rounded-2xl p-4 shadow-md mx-4 my-2">
-      <Text className="text-sm text-gray-400 mb-4">{item.status}</Text>
-      <View className="flex-row justify-between items-start">
-        <View>
-          <View className="flex-row items-center mb-2">
-            <Ionicons name="calendar-outline" size={24} color="#6B7280" />
-            <Text className="ml-3 text-base text-gray-700">{item.date}</Text>
-          </View>
-          <View className="flex-row items-center">
-            <Ionicons name="time-outline" size={24} color="#6B7280" />
-            <Text className="ml-3 text-base text-gray-700">{item.time}</Text>
-          </View>
+const TaskCard = ({ item }: { item: any }) => (
+  <View className="bg-white rounded-2xl p-4 shadow-md mx-4 my-2">
+    <Text className="text-sm text-gray-400 mb-4">{item.status}</Text>
+    <View className="flex-row justify-between items-start">
+      <View>
+        <View className="flex-row items-center mb-2">
+          <Ionicons name="calendar-outline" size={24} color="#6B7280" />
+          <Text className="ml-3 text-base text-gray-700">{item.date}</Text>
         </View>
-        <View className="items-center">
-          <Image source={{ uri: item.user.avatar }} className="w-12 h-12 rounded-full mb-1" />
-          <Text className="text-sm text-gray-600">{item.user.name}</Text>
+        <View className="flex-row items-center">
+          <Ionicons name="time-outline" size={24} color="#6B7280" />
+          <Text className="ml-3 text-base text-gray-700">{item.time}</Text>
         </View>
       </View>
-      <View className="flex-row border-t border-gray-200 mt-4 pt-3">
-        <TouchableOpacity className="flex-1 items-center" onPress={() => router.push('/messages/ChatScreen')}>
-          <Text className="text-base text-cyan-500 font-semibold">Chat</Text>
-        </TouchableOpacity>
-        <View className="w-px h-full bg-gray-200" />
-        <TouchableOpacity className="flex-1 items-center">
-          <Text className="text-base text-cyan-500 font-semibold">Reservar</Text>
-        </TouchableOpacity>
+      <View className="items-center">
+        <Image source={{ uri: item.user.avatar }} className="w-12 h-12 rounded-full mb-1" />
+        <Text className="text-sm text-gray-600">{item.user.name}</Text>
       </View>
     </View>
-  );
+    <View className="flex-row border-t border-gray-200 mt-4 pt-3">
+      <TouchableOpacity className="flex-1 items-center" onPress={() => router.push('/messages/ChatScreen')}>
+        <Text className="text-base text-cyan-500 font-semibold">Chat</Text>
+      </TouchableOpacity>
+      <View className="w-px h-full bg-gray-200" />
+      <TouchableOpacity className="flex-1 items-center">
+        <Text className="text-base text-cyan-500 font-semibold">Reservar</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+);
 
 const EmptyState = ({ tab }: { tab: string }) => (
   <View className="flex-1 justify-center items-center mt-24">
@@ -80,8 +56,11 @@ const EmptyState = ({ tab }: { tab: string }) => (
 );
 
 const TasksScreen = () => {
+  const { id, userType } = useUser();
   const [activeTab, setActiveTab] = useState('Scheduled');
   const pagerRef = useRef<PagerView>(null);
+
+  const { scheduledTasks, completedTasks, loading, error } = useTasks(id);
 
   const handleTabPress = (tab: 'Scheduled' | 'Completed', page: number) => {
     setActiveTab(tab);
@@ -107,39 +86,49 @@ const TasksScreen = () => {
       </View>
 
       {/* Task List with PagerView */}
-      <PagerView 
-        style={{ flex: 1 }} 
-        initialPage={0} 
-        ref={pagerRef}
-        onPageSelected={(e) => {
-          setActiveTab(e.nativeEvent.position === 0 ? 'Scheduled' : 'Completed');
-        }}
-      >
-        <View key="1">
-          {mockScheduledTasks.length === 0 ? (
-            <EmptyState tab="Scheduled" />
-          ) : (
-            <FlatList
-              data={mockScheduledTasks}
-              renderItem={({ item }) => <TaskCard item={item} />}
-              keyExtractor={item => item.id}
-              contentContainerStyle={{ paddingTop: 16 }}
-            />
-          )}
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-lg text-gray-500">Cargando tareas...</Text>
         </View>
-        <View key="2">
-          {mockCompletedTasks.length === 0 ? (
-            <EmptyState tab="Completed" />
-          ) : (
-            <FlatList
-              data={mockCompletedTasks}
-              renderItem={({ item }) => <TaskCard item={item} />}
-              keyExtractor={item => item.id}
-              contentContainerStyle={{ paddingTop: 16 }}
-            />
-          )}
+      ) : error ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-lg text-red-500">{error || ''}</Text>
         </View>
-      </PagerView>
+      ) : (
+        <PagerView 
+          style={{ flex: 1 }} 
+          initialPage={0} 
+          ref={pagerRef}
+          onPageSelected={(e) => {
+            setActiveTab(e.nativeEvent.position === 0 ? 'Scheduled' : 'Completed');
+          }}
+        >
+          <View key="1">
+            {scheduledTasks.length === 0 ? (
+              <EmptyState tab="Scheduled" />
+            ) : (
+              <FlatList
+                data={scheduledTasks}
+                renderItem={({ item }) => <TaskCard item={item} />}
+                keyExtractor={item => item.id}
+                contentContainerStyle={{ paddingTop: 16 }}
+              />
+            )}
+          </View>
+          <View key="2">
+            {completedTasks.length === 0 ? (
+              <EmptyState tab="Completed" />
+            ) : (
+              <FlatList
+                data={completedTasks}
+                renderItem={({ item }) => <TaskCard item={item} />}
+                keyExtractor={item => item.id}
+                contentContainerStyle={{ paddingTop: 16 }}
+              />
+            )}
+          </View>
+        </PagerView>
+      )}
     </View>
   );
 };

@@ -1,4 +1,5 @@
 import LogoHeader from "@/components/LogoHeader";
+import { useRegistrarUsuario } from "@/hooks/useRegistrarUsuario";
 import { router } from "expo-router";
 import {
   Car,
@@ -12,6 +13,8 @@ import {
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useUser } from '../../../contexts/UserContext';
+import { useRegister } from "../RegisterContext";
 
 const servicios = [
   { key: "plomeria", label: "Plomería", icon: <Droplets size={28} color="#222" /> },
@@ -25,7 +28,10 @@ const servicios = [
 ];
 
 export default function ServiciosScreen() {
-  const [selected, setSelected] = useState<string[]>([]);
+  const { registerData, updateRegisterData } = useRegister();
+  const { registrarUsuario, loading: loadingUsuario, error: errorUsuario } = useRegistrarUsuario();
+  const [selected, setSelected] = useState<string[]>(registerData.especialista.servicios || []);
+  const { setUser } = useUser();
 
   const toggleServicio = (key: string) => {
     setSelected((prev) =>
@@ -62,10 +68,17 @@ export default function ServiciosScreen() {
         className={`w-full rounded-lg py-3 mt-0 ${
           selected.length === 0 ? "bg-gray-200" : "bg-yellow-300"
         }`}
-        disabled={selected.length === 0}
-        onPress={() => {
+        disabled={selected.length === 0 || loadingUsuario}
+        onPress={async () => {
           if (selected.length > 0) {
-            router.push({ pathname: "./JobRegisterForm", params: { jobTypes: JSON.stringify(selected) } });
+            updateRegisterData({ especialista: { servicios: selected } });
+            // Enviar usuario a la API y guardar el ID
+            const id = await registrarUsuario({ ...registerData, especialista: { ...registerData.especialista, servicios: selected } });
+            if (id) {
+              updateRegisterData({ id });
+              setUser(id, 'especialista');
+              router.push({ pathname: "./JobRegisterForm", params: { jobTypes: JSON.stringify(selected) } });
+            }
           }
         }}
       >
@@ -74,9 +87,10 @@ export default function ServiciosScreen() {
             selected.length === 0 ? "text-gray-500" : "text-[#1A2341]"
           }`}
         >
-          Continuar
+          {loadingUsuario ? "Enviando..." : "Continuar"}
         </Text>
       </TouchableOpacity>
+      {errorUsuario && <Text className="text-red-500 text-center mb-2">{errorUsuario}</Text>}
     </View>
   );
 }

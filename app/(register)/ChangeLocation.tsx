@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MapView, { Circle, Marker, Region } from "react-native-maps";
+import api from "../../api";
 
 interface Suggestion {
   display_name: string;
@@ -92,14 +93,13 @@ export default function ChangeLocationScreen() {
     }
     try {
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text)}&addressdetails=1&limit=5&accept-language=es`;
-      const res = await fetch(url, {
+      const res = await api.post(url, {
         headers: {
-          'User-Agent': 'FixMatchApp/1.0 (a.alvarez08@ufromail.cl)',
-          'Accept-Language': 'es',
+          'Content-Type': 'application/json',
         },
       });
-      const data = await res.json();
-      setSuggestions(data);
+      const result = res.data;
+      setSuggestions(result);
     } catch (e) {
       setSuggestions([]);
     }

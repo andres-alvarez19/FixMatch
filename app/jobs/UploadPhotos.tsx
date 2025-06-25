@@ -1,14 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import api from "../../api";
 
 const NUM_PHOTOS = 9;
 
 export default function UploadPhotos() {
   const [photos, setPhotos] = useState<(string | null)[]>(Array(NUM_PHOTOS).fill(null));
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const solicitudId = params.solicitudId as string;
 
   // Cálculo dinámico del ancho de la caja
   const screenWidth = Dimensions.get('window').width;
@@ -48,6 +51,22 @@ export default function UploadPhotos() {
     </View>
   );
 
+  const handleUpload = async () => {
+    for (const photo of photos.filter(Boolean)) {
+      const formData = new FormData();
+      formData.append("solicitudId", solicitudId);
+      formData.append("foto", {
+        uri: photo,
+        name: "foto.jpg",
+        type: "image/jpeg",
+      } as any);
+      await api.post("/api/solicitudes/upload-foto", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    }
+    router.push("./RequestSuccess");
+  };
+
   return (
     <View className="flex-1 px-6 pt-12 bg-[#FFFDEB]">
       {/* Header */}
@@ -71,7 +90,7 @@ export default function UploadPhotos() {
       <TouchableOpacity
         className={`w-full rounded-xl py-3 mt-4 ${photos.filter((p) => !!p).length >= 3 ? 'bg-[#FEDF70]' : 'bg-gray-200'}`}
         disabled={photos.filter((p) => !!p).length < 3}
-        onPress={() => router.push("./RequestSuccess")}
+        onPress={handleUpload}
       >
         <Text className="text-center text-lg text-[#1A2341] font-medium">Continuar</Text>
       </TouchableOpacity>

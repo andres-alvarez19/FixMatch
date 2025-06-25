@@ -1,11 +1,23 @@
-
 import { Ionicons } from "@expo/vector-icons"
+import { LinearGradient } from "expo-linear-gradient"
 import { useRouter } from "expo-router"
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { useUser } from '../../contexts/UserContext'
+import { useUserProfile } from "../../hooks/useUserProfile"
 
 
 const ProfileScreen = () => {
     const router = useRouter()
+    const { profile, loading } = useUserProfile()
+    const { id, userType } = useUser()
+
+    if (loading || !profile) {
+        return (
+            <View className="flex-1 justify-center items-center bg-[#FFFEF7]">
+                <Text className="text-lg text-gray-700">Cargando perfil...</Text>
+            </View>
+        )
+    }
 
     const renderStars = (rating: number) => {
         const stars = []
@@ -32,12 +44,11 @@ const ProfileScreen = () => {
         <ScrollView className="flex-1 bg-[#FFFEF7]">
             {/* Header with gradient background */}
             <View className="relative">
-                <View
+                <LinearGradient
+                    colors={["#4A5568", "#2D3748", "#1A202C"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
                     className="h-80 px-6 pt-12 pb-6 rounded-b-3xl"
-                    style={{
-                        background: "linear-gradient(135deg, #4A5568 0%, #2D3748 50%, #1A202C 100%)",
-                        backgroundColor: "#4A5568", // Fallback for React Native
-                    }}
                 >
                     {/* Profile Image and Info */}
                     <TouchableOpacity 
@@ -45,12 +56,12 @@ const ProfileScreen = () => {
                         onPress={() => router.push("/profile/EditProfile")}
                     >
                         <Image
-                            source={{ uri: "https://randomuser.me/api/portraits/men/22.jpg" }}
+                            source={{ uri: profile.profileImage }}
                             className="w-20 h-20 rounded-full mr-4"
                         />
                         <View className="flex-1">
-                            <Text className="text-white text-2xl font-bold mb-1">Orlando Diggs</Text>
-                            <Text className="text-white/80 text-base">California, USA</Text>
+                            <Text className="text-white text-2xl font-bold mb-1">{profile.fullName}</Text>
+                            <Text className="text-white/80 text-base">{profile.location}</Text>
                         </View>
                     </TouchableOpacity>
 
@@ -58,13 +69,13 @@ const ProfileScreen = () => {
                     <View className="flex-row justify-between mb-4">
                         <View className="bg-white/90 rounded-2xl p-4 flex-1 mr-3">
                             <Text className="text-gray-600 text-sm mb-1">Rating</Text>
-                            <Text className="text-black text-2xl font-bold mb-2">4.5</Text>
-                            <View className="flex-row">{renderStars(4.5)}</View>
+                            <Text className="text-black text-2xl font-bold mb-2">{profile.rating}</Text>
+                            <View className="flex-row">{renderStars(profile.rating)}</View>
                         </View>
 
                         <View className="bg-white/90 rounded-2xl p-4 flex-1 ml-3">
                             <Text className="text-gray-600 text-sm mb-1">Projects</Text>
-                            <Text className="text-black text-2xl font-bold mb-2">50</Text>
+                            <Text className="text-black text-2xl font-bold mb-2">{profile.projects}</Text>
                             <Ionicons name="briefcase-outline" size={20} color="#666" />
                         </View>
                     </View>
@@ -77,7 +88,7 @@ const ProfileScreen = () => {
                         <Text className="text-white text-base mr-2">Edit profile</Text>
                         <Ionicons name="pencil" size={20} color="white" />
                     </TouchableOpacity>
-                </View>
+                </LinearGradient>
             </View>
 
             {/* Content Sections */}
@@ -89,7 +100,7 @@ const ProfileScreen = () => {
                         <Text className="text-xl font-bold text-gray-800 ml-3">About me</Text>
                     </View>
                     <Text className="text-gray-600 text-base leading-6">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lectus id commodo egestas metus interdum dolor.
+                        {profile.aboutMe}
                     </Text>
                 </View>
 
@@ -101,9 +112,9 @@ const ProfileScreen = () => {
                     </View>
 
                     <View className="bg-white rounded-2xl p-4 shadow-sm">
-                        <Text className="text-lg font-bold text-gray-800 mb-1">Information Technology</Text>
-                        <Text className="text-gray-600 text-base mb-1">University of Oxford</Text>
-                        <Text className="text-gray-500 text-sm">Sep 2010 - Aug 2013 • 5 Years</Text>
+                        <Text className="text-lg font-bold text-gray-800 mb-1">{profile.education[0]?.title}</Text>
+                        <Text className="text-gray-600 text-base mb-1">{profile.education[0]?.institution}</Text>
+                        <Text className="text-gray-500 text-sm">{profile.education[0]?.period}</Text>
                     </View>
                 </View>
 
@@ -119,8 +130,8 @@ const ProfileScreen = () => {
                             <Text className="text-white font-bold text-xs">PDF</Text>
                         </View>
                         <View className="flex-1">
-                            <Text className="text-gray-800 font-semibold text-base mb-1">Jamet kudasi - CV - UI/UX Designer</Text>
-                            <Text className="text-gray-500 text-sm">867 Kb • 14 Feb 2022 at 11:30 am</Text>
+                            <Text className="text-gray-800 font-semibold text-base mb-1">{profile.resume?.name}</Text>
+                            <Text className="text-gray-500 text-sm">{profile.resume?.size} • {profile.resume?.date}</Text>
                         </View>
                     </View>
                 </View>
@@ -137,8 +148,8 @@ const ProfileScreen = () => {
                             <Text className="text-white font-bold text-xs">PDF</Text>
                         </View>
                         <View className="flex-1">
-                            <Text className="text-gray-800 font-semibold text-base mb-1">Jamet kudasi - CV - UI/UX Designer</Text>
-                            <Text className="text-gray-500 text-sm">867 Kb • 14 Feb 2022 at 11:30 am</Text>
+                            <Text className="text-gray-800 font-semibold text-base mb-1">{profile.certificates[0]?.name}</Text>
+                            <Text className="text-gray-500 text-sm">{profile.certificates[0]?.size} • {profile.certificates[0]?.date}</Text>
                         </View>
                     </View>
                 </View>

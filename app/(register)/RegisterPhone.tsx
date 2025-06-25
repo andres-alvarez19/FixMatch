@@ -1,9 +1,11 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRegister } from "./RegisterContext";
 
 export default function RegisterPhone() {
   const params = useLocalSearchParams();
+  const { updateRegisterData } = useRegister();
   const [telefono, setTelefono] = useState("");
   const [errors, setErrors] = useState<any>({});
   const [formTriedSubmit, setFormTriedSubmit] = useState(false);
@@ -19,6 +21,7 @@ export default function RegisterPhone() {
   const handleContinue = () => {
     setFormTriedSubmit(true);
     if (validate()) {
+      updateRegisterData({ telefono });
       router.push(`./RegisterPassword?nombre=${encodeURIComponent(params.nombre as string)}&email=${encodeURIComponent(params.email as string)}&telefono=${encodeURIComponent(telefono)}`);
     }
   };
