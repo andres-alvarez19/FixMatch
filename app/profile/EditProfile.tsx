@@ -2,22 +2,67 @@ import { Ionicons } from "@expo/vector-icons"
 import DateTimePicker from "@react-native-community/datetimepicker"
 import { Picker } from "@react-native-picker/picker"
 import { useRouter } from "expo-router"
-import { useState } from "react"
-import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { useEffect, useState } from "react"
+import { Alert, Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { useUserProfile } from "../../hooks/useUserProfile"
+import { useUpdateProfile } from "../../hooks/useUpdateProfile"
 
 export default function EditProfile() {
     const router = useRouter()
-    const [fullName, setFullName] = useState("Brandone Louis")
-    const [dateOfBirth, setDateOfBirth] = useState(new Date(1992, 7, 6)) // Aug 6, 1992
+    const { profile, loading: profileLoading } = useUserProfile()
+    const { updateProfile, loading: updateLoading, error, success } = useUpdateProfile()
+    
+    const [fullName, setFullName] = useState("")
+    const [dateOfBirth, setDateOfBirth] = useState(new Date())
     const [showDatePicker, setShowDatePicker] = useState(false)
-    const [email, setEmail] = useState("Brandonelouis@gmail.com")
-    const [countryCode, setCountryCode] = useState("1")
-    const [phoneNumber, setPhoneNumber] = useState("619 3456 7890")
-    const [location, setLocation] = useState("California, United states")
+    const [email, setEmail] = useState("")
+    const [countryCode, setCountryCode] = useState("")
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [location, setLocation] = useState("")
 
-    const handleSave = () => {
-        // Handle save logic here
-        router.back()
+    // Cargar datos del perfil cuando esté disponible
+    useEffect(() => {
+        if (profile) {
+            setFullName(profile.fullName || "")
+            setEmail(profile.email || "")
+            setPhoneNumber(profile.phoneNumber || "")
+            setLocation(profile.location || "")
+            setCountryCode(profile.countryCode || "")
+            
+            // Parsear fecha de nacimiento si existe
+            if (profile.dateOfBirth) {
+                try {
+                    setDateOfBirth(new Date(profile.dateOfBirth))
+                } catch (e) {
+                    console.log('Error parsing date:', e)
+                }
+            }
+        }
+    }, [profile])
+
+    const handleSave = async () => {
+        try {
+            await updateProfile({
+                name: fullName,
+                dateOfBirth: dateOfBirth.toISOString().split('T')[0], // Formato YYYY-MM-DD
+                email: email,
+                countryCode: countryCode,
+                phoneNumber: phoneNumber,
+                location: location
+            })
+            
+            Alert.alert(
+                "Éxito",
+                "Perfil actualizado correctamente",
+                [{ text: "OK", onPress: () => router.back() }]
+            )
+        } catch (error) {
+            Alert.alert(
+                "Error",
+                "No se pudo actualizar el perfil. Inténtalo de nuevo.",
+                [{ text: "OK" }]
+            )
+        }
     }
 
     const formatDate = (date: Date) => {
@@ -38,6 +83,15 @@ export default function EditProfile() {
         return `${date.getDate().toString().padStart(2, "0")} ${months[date.getMonth()]} ${date.getFullYear()}`
     }
 
+    // Mostrar loading mientras se carga el perfil
+    if (profileLoading) {
+        return (
+            <View className="flex-1 justify-center items-center bg-[#FFFEF7]">
+                <Text className="text-lg text-gray-700">Cargando perfil...</Text>
+            </View>
+        )
+    }
+
     return (
         <ScrollView className="flex-1 bg-[#FFFEF7]">
             {/* Header with gradient background */}
@@ -55,12 +109,18 @@ export default function EditProfile() {
 
                     {/* Profile Image and Info */}
                     <View className="items-center mt-8">
-                        <Image
-                            source={{ uri: "https://randomuser.me/api/portraits/men/22.jpg" }}
-                            className="w-24 h-24 rounded-full mb-4"
-                        />
-                        <Text className="text-white text-2xl font-bold mb-1">Orlando Diggs</Text>
-                        <Text className="text-white/80 text-base mb-6">California, USA</Text>
+                        {profile?.profileImage ? (
+                            <Image
+                                source={{ uri: profile.profileImage }}
+                                className="w-24 h-24 rounded-full mb-4"
+                            />
+                        ) : (
+                            <View className="w-24 h-24 rounded-full mb-4 bg-white/20 items-center justify-center">
+                                <Ionicons name="person" size={48} color="white" />
+                            </View>
+                        )}
+                        <Text className="text-white text-2xl font-bold mb-1">{profile?.fullName || "Usuario"}</Text>
+                        <Text className="text-white/80 text-base mb-6">{profile?.location || "Ubicación no especificada"}</Text>
 
                         {/* Change Image Button */}
                         <TouchableOpacity className="bg-white/20 rounded-xl px-6 py-3">
@@ -128,6 +188,7 @@ export default function EditProfile() {
                     <View className="flex-row">
                         <View className="bg-gray-100 rounded-l-xl border-r border-gray-200" style={{ width: 80 }}>
                             <Picker selectedValue={countryCode} onValueChange={setCountryCode} style={{ height: 56 }}>
+                                <Picker.Item label="Seleccionar" value="" />
                                 <Picker.Item label="1+" value="1" />
                                 <Picker.Item label="44+" value="44" />
                                 <Picker.Item label="33+" value="33" />
@@ -155,9 +216,22 @@ export default function EditProfile() {
                     />
                 </View>
 
+                {/* Error Message */}
+                {error && (
+                    <View className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        <Text className="text-red-700 text-center">{error}</Text>
+                    </View>
+                )}
+
                 {/* Save Button */}
-                <TouchableOpacity className="bg-yellow-400 rounded-xl py-4 items-center" onPress={handleSave}>
-                    <Text className="text-black text-lg font-bold">SAVE</Text>
+                <TouchableOpacity 
+                    className={`rounded-xl py-4 items-center ${updateLoading ? 'bg-gray-400' : 'bg-yellow-400'}`} 
+                    onPress={handleSave}
+                    disabled={updateLoading || profileLoading}
+                >
+                    <Text className="text-black text-lg font-bold">
+                        {updateLoading ? 'GUARDANDO...' : 'GUARDAR'}
+                    </Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>

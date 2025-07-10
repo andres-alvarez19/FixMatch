@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import LoginForm from "./login/LoginForm";
 import RegisterForm from "./login/RegisterForm";
+import { RegisterProvider } from "./(register)/RegisterContext";
 
 export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
@@ -42,12 +43,9 @@ export default function LoginScreen() {
           onShowPassword={() => setShowPassword(!showPassword)}
         />
       ) : (
-        <RegisterForm
-          showPassword={showPassword}
-          onShowPassword={() => setShowPassword(!showPassword)}
-          showRepeatPassword={showRepeatPassword}
-          onShowRepeatPassword={() => setShowRepeatPassword(!showRepeatPassword)}
-        />
+        <RegisterProvider>
+          <RegisterForm />
+        </RegisterProvider>
       )}
     </View>
   );

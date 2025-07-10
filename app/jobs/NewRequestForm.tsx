@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useRegister } from "../(register)/RegisterContext";
+import { useUser } from "../../contexts/UserContext";
 import { useCrearSolicitud } from "../../hooks/useCrearSolicitud";
 
 export default function NewRequestForm() {
@@ -14,7 +14,10 @@ export default function NewRequestForm() {
   const [errors, setErrors] = useState<any>({});
   const [formTriedSubmit, setFormTriedSubmit] = useState(false);
   const { crearSolicitud, loading: creando, error: errorCrear } = useCrearSolicitud();
-  const { registerData } = useRegister();
+  const { user } = useUser();
+
+  // Debug: Log del usuario en el contexto
+  console.log('NewRequestForm - User context:', user);
 
   const validate = () => {
     const newErrors: any = {};
@@ -28,15 +31,15 @@ export default function NewRequestForm() {
   const handleContinue = async () => {
     setFormTriedSubmit(true);
     if (validate()) {
-      if (!registerData?.id) {
-        alert('Error: No se encontró el ID de usuario.');
+      if (!user?.id) {
+        alert('Error: No se encontró el ID de usuario. Por favor, inicia sesión nuevamente.');
         return;
       }
       const solicitudId = await crearSolicitud({
         especialidad: specialty,
         nombreSolicitud: requestName,
         descripcion: description,
-        usuarioId: registerData.id,
+        usuarioId: user.id,
       });
       if (solicitudId) {
         router.push({ pathname: "/jobs/UploadPhotos", params: { solicitudId } });

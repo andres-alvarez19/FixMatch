@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/images/Headlineless-logo.png",
         "backgroundColor": "#FFFDEB"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.andres_4081.FixMatch"
     },
     "web": {
       "bundler": "metro",
@@ -38,10 +39,17 @@
           "resizeMode": "contain",
           "backgroundColor": "#FFFDEB"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e11784d4-09f4-4c53-ab53-10426bded97d"
+      }
     }
   }
 }

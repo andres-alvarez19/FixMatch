@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+import { setAuthToken } from "../api";
 
 export type UserType = "cliente" | "especialista" | null;
 
@@ -26,11 +27,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const handleSetUser = (userProfile: UserProfile) => {
+    console.log('UserContext - Setting user:', userProfile);
     setUser(userProfile);
   };
 
   const logout = () => {
     setUser(null);
+    setAuthToken(null); // Limpiar el token al hacer logout
   };
 
   return (

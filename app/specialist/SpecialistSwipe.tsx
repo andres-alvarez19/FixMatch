@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from 'react';
 import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
-import Swiper from 'react-native-deck-swiper';
+import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageProgressBar from '../../components/ImageProgressBar';
 import { Trabajo } from '../../hooks/useListarTrabajos';
@@ -92,23 +92,24 @@ const SpecialistSwipe = ({ trabajos, loading, error, refetch }: SpecialistSwipeP
     );
   }
 
+  const width = 350 // Ajusta el ancho de la tarjeta según tu diseño
+
   return (
-      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-        <View>
-          <Swiper
-              cards={trabajos}
-              renderCard={(card: any) => <Card card={card} />}
-              onSwipedLeft={(i: number) => console.log('onSwipedLeft:', trabajos[i]?.title)}
-              onSwipedRight={(i: number) => console.log('onSwipedRight:', trabajos[i]?.title)}
-              onSwipedAll={() => console.log('onSwipedAll')}
-              backgroundColor="#f2f2f2"
-              stackSize={3}
-              stackSeparation={15}
-              animateCardOpacity
-              verticalSwipe={false}
-          />
-        </View>
-      </SafeAreaView>
+    <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+      <View>
+        <Carousel
+          width={width}
+          height={600}
+          data={trabajos}
+          renderItem={({ item }) => <Card card={item} />}
+          style={{ flex: 1 }}
+          loop={false}
+          onSnapToItem={(index) => {
+            // Puedes agregar lógica aquí si necesitas saber el índice actual
+          }}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 

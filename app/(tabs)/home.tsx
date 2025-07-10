@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from 'react';
 import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
-import Swiper from 'react-native-deck-swiper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageProgressBar from '../../components/ImageProgressBar';
 import { useUser } from '../../contexts/UserContext';
@@ -72,12 +71,12 @@ const Card = ({ card }: { card: Trabajo }) => {
 
 const HomeScreen = () => {
   const { trabajos, loading, error, refetch } = useListarTrabajos();
-  const { id, userType } = useUser();
+  const { user } = useUser();
 
-  if (userType === 'cliente') {
+  if (user?.userType === 'cliente') {
     return <ClientSwipe />;
   }
-  if (userType === 'especialista') {
+  if (user?.userType === 'especialista') {
     return <SpecialistSwipe trabajos={trabajos} loading={loading} error={error} refetch={refetch} />;
   }
 
@@ -108,24 +107,7 @@ const HomeScreen = () => {
     );
   }
 
-  return (
-      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-        <View>
-          <Swiper
-              cards={trabajos}
-              renderCard={(card: any) => <Card card={card} />}
-              onSwipedLeft={(i: number) => console.log('onSwipedLeft:', trabajos[i]?.title)}
-              onSwipedRight={(i: number) => console.log('onSwipedRight:', trabajos[i]?.title)}
-              onSwipedAll={() => console.log('onSwipedAll')}
-              backgroundColor="#f2f2f2"
-              stackSize={3}
-              stackSeparation={15}
-              animateCardOpacity
-              verticalSwipe={false}
-          />
-        </View>
-      </SafeAreaView>
-  );
+  return null; // O un loader/spinner mientras se determina el tipo de usuario
 };
 
 export default HomeScreen;

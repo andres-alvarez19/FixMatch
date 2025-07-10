@@ -42,9 +42,9 @@ export default function ConfirmLocationScreen() {
         longitude: loc.coords.longitude,
       });
       if (addr.length > 0) {
-        setAddress(
-          `${addr[0].street || ""} ${addr[0].name || ""} ${addr[0].city || ""}`.trim()
-        );
+        const fullAddress = `${addr[0].street || ""} ${addr[0].name || ""} ${addr[0].city || ""}`.trim();
+        setAddress(fullAddress);
+        updateRegisterData({ ubicacion: fullAddress });
       }
       setLoading(false);
     })();
@@ -116,9 +116,9 @@ export default function ConfirmLocationScreen() {
             updateRegisterData({ id });
             setUser({ ...registerData, id });
             if (userType === "client") {
-              router.push("/client/OptionalNewJob");
+              router.push("/(register)/client/OptionalNewJob");
             } else if (userType === "specialist") {
-              router.push("/specialist/SpecialistCategory");
+              router.push("/(register)/specialist/SpecialistCategory");
             }
           }
         }}
@@ -131,7 +131,7 @@ export default function ConfirmLocationScreen() {
         className="w-full bg-gray-200 rounded-lg py-3"
         onPress={() => {
           router.push({
-            pathname: "/ChangeLocation",
+            pathname: "/(register)/ChangeLocation",
             params: { userType }
           });
         }}

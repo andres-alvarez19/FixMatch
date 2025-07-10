@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native";
+import { useRegister } from "../(register)/RegisterContext";
+import { useEmailValidation } from "../../hooks/useEmailValidation";
 
 interface RegisterFormProps {
   showPassword: boolean;
@@ -14,25 +16,39 @@ export default function RegisterForm() {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<any>({});
   const [formTriedSubmit, setFormTriedSubmit] = useState(false);
+  const { updateRegisterData } = useRegister();
+  const { validateEmail, validateEmailOnChange, isCheckingEmail, emailError, clearEmailError } = useEmailValidation();
 
-  const validate = () => {
+  const validate = async () => {
     const newErrors: any = {};
     if (!nombre.trim()) newErrors.nombre = "El nombre completo es obligatorio";
-    if (!email.trim()) newErrors.email = "El email es obligatorio";
-    else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = "El email debe ser válido";
+    
+    // Validación de email usando el hook personalizado
+    const isEmailValid = await validateEmail(email);
+    if (!isEmailValid) {
+      newErrors.email = emailError;
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setFormTriedSubmit(true);
-    if (validate()) {
-      router.push('./RegisterPhone?nombre=' + encodeURIComponent(nombre) + '&email=' + encodeURIComponent(email));
+    const isValid = await validate();
+    if (isValid) {
+      updateRegisterData({ nombre, email });
+      router.push({
+        pathname: "/(register)/RegisterPhone",
+        params: { nombre, email },
+      });
     }
   };
 
   useEffect(() => {
-    if (formTriedSubmit) validate();
+    if (formTriedSubmit) {
+      validate();
+    }
   }, [nombre, email]);
 
   return (
@@ -51,22 +67,36 @@ export default function RegisterForm() {
       {/* Email */}
       <View className="w-full mb-2">
         <Text className="mb-1 text-base text-black">Email</Text>
-        <TextInput
-          className="border border-cyan-300 rounded-lg px-3 py-2 bg-white"
-          placeholder="ejemplo@email.com"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        {formTriedSubmit && errors.email && <Text className="text-red-500 text-xs mt-1">{errors.email}</Text>}
+        <View className="relative">
+          <TextInput
+            className="border border-cyan-300 rounded-lg px-3 py-2 bg-white pr-10"
+            placeholder="ejemplo@email.com"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              validateEmailOnChange(text);
+            }}
+          />
+          {isCheckingEmail && (
+            <View className="absolute right-3 top-2">
+              <ActivityIndicator size="small" color="#1A2341" />
+            </View>
+          )}
+        </View>
+        {(formTriedSubmit && errors.email) || emailError ? (
+          <Text className="text-red-500 text-xs mt-1">{errors.email || emailError}</Text>
+        ) : null}
       </View>
       {/* Botón */}
       <TouchableOpacity 
-        className={`w-full rounded-lg py-3 mt-4 mb-2 ${(formTriedSubmit && Object.keys(errors).length > 0) ? 'bg-gray-200' : 'bg-yellow-300'}`}
+        className={`w-full rounded-lg py-3 mt-4 mb-2 ${(formTriedSubmit && Object.keys(errors).length > 0) || isCheckingEmail ? 'bg-gray-200' : 'bg-yellow-300'}`}
         onPress={handleContinue}
-        disabled={formTriedSubmit && Object.keys(errors).length > 0}
+        disabled={(formTriedSubmit && Object.keys(errors).length > 0) || isCheckingEmail}
       >
-        <Text className="text-center text-lg text-[#1A2341] font-medium">Siguiente</Text>
+        <Text className="text-center text-lg text-[#1A2341] font-medium">
+          {isCheckingEmail ? 'Verificando...' : 'Siguiente'}
+        </Text>
       </TouchableOpacity>
     </View>
   );

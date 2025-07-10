@@ -9,11 +9,21 @@ export function useRegistrarUsuario() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post("/api/user/register", data);
+      const flattenedData = {
+        ...data,
+        servicios: data.especialista?.servicios || [],
+      };
+      delete flattenedData.especialista;
+
+
+      const res = await api.post("/api/user/register", flattenedData);
       setLoading(false);
-      return res.data.id;
+      if (res.status === 200 && res.data.id) {
+        return res.data.id;
+      }
+      return null;
     } catch (e: any) {
-      setError(e.message || "Error de red");
+      setError(e.response?.data?.message || e.message || "Error de red");
       setLoading(false);
       return null;
     }

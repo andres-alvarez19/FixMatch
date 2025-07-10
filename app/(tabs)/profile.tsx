@@ -9,7 +9,7 @@ import { useUserProfile } from "../../hooks/useUserProfile"
 const ProfileScreen = () => {
     const router = useRouter()
     const { profile, loading } = useUserProfile()
-    const { id, userType } = useUser()
+    const { user } = useUser()
 
     if (loading || !profile) {
         return (
@@ -20,6 +20,12 @@ const ProfileScreen = () => {
     }
 
     const renderStars = (rating: number) => {
+        if (!rating || rating <= 0) {
+            return Array(5).fill(0).map((_, i) => (
+                <Ionicons key={`empty-${i}`} name="star-outline" size={16} color="#FFA500" />
+            ));
+        }
+
         const stars = []
         const fullStars = Math.floor(rating)
         const hasHalfStar = rating % 1 !== 0
@@ -56,12 +62,12 @@ const ProfileScreen = () => {
                         onPress={() => router.push("/profile/EditProfile")}
                     >
                         <Image
-                            source={{ uri: profile.profileImage }}
+                            source={{ uri: profile.profileImage || 'https://via.placeholder.com/80' }}
                             className="w-20 h-20 rounded-full mr-4"
                         />
                         <View className="flex-1">
-                            <Text className="text-white text-2xl font-bold mb-1">{profile.fullName}</Text>
-                            <Text className="text-white/80 text-base">{profile.location}</Text>
+                            <Text className="text-white text-2xl font-bold mb-1">{profile.fullName || 'Usuario'}</Text>
+                            <Text className="text-white/80 text-base">{profile.location || 'Ubicación no especificada'}</Text>
                         </View>
                     </TouchableOpacity>
 
@@ -69,13 +75,13 @@ const ProfileScreen = () => {
                     <View className="flex-row justify-between mb-4">
                         <View className="bg-white/90 rounded-2xl p-4 flex-1 mr-3">
                             <Text className="text-gray-600 text-sm mb-1">Rating</Text>
-                            <Text className="text-black text-2xl font-bold mb-2">{profile.rating}</Text>
-                            <View className="flex-row">{renderStars(profile.rating)}</View>
+                            <Text className="text-black text-2xl font-bold mb-2">{profile.rating || 0}</Text>
+                            <View className="flex-row">{renderStars(profile.rating || 0)}</View>
                         </View>
 
                         <View className="bg-white/90 rounded-2xl p-4 flex-1 ml-3">
                             <Text className="text-gray-600 text-sm mb-1">Projects</Text>
-                            <Text className="text-black text-2xl font-bold mb-2">{profile.projects}</Text>
+                            <Text className="text-black text-2xl font-bold mb-2">{profile.projects || 0}</Text>
                             <Ionicons name="briefcase-outline" size={20} color="#666" />
                         </View>
                     </View>
@@ -100,7 +106,7 @@ const ProfileScreen = () => {
                         <Text className="text-xl font-bold text-gray-800 ml-3">About me</Text>
                     </View>
                     <Text className="text-gray-600 text-base leading-6">
-                        {profile.aboutMe}
+                        {profile.aboutMe || 'No hay información disponible sobre este usuario.'}
                     </Text>
                 </View>
 
@@ -111,11 +117,17 @@ const ProfileScreen = () => {
                         <Text className="text-xl font-bold text-gray-800 ml-3">Education</Text>
                     </View>
 
-                    <View className="bg-white rounded-2xl p-4 shadow-sm">
-                        <Text className="text-lg font-bold text-gray-800 mb-1">{profile.education[0]?.title}</Text>
-                        <Text className="text-gray-600 text-base mb-1">{profile.education[0]?.institution}</Text>
-                        <Text className="text-gray-500 text-sm">{profile.education[0]?.period}</Text>
-                    </View>
+                    {profile.education && profile.education.length > 0 ? (
+                        <View className="bg-white rounded-2xl p-4 shadow-sm">
+                            <Text className="text-lg font-bold text-gray-800 mb-1">{profile.education[0]?.title || 'Título no especificado'}</Text>
+                            <Text className="text-gray-600 text-base mb-1">{profile.education[0]?.institution || 'Institución no especificada'}</Text>
+                            <Text className="text-gray-500 text-sm">{profile.education[0]?.period || 'Período no especificado'}</Text>
+                        </View>
+                    ) : (
+                        <View className="bg-white rounded-2xl p-4 shadow-sm">
+                            <Text className="text-gray-500 text-base">No hay información de educación disponible.</Text>
+                        </View>
+                    )}
                 </View>
 
                 {/* Resume */}
@@ -125,15 +137,21 @@ const ProfileScreen = () => {
                         <Text className="text-xl font-bold text-gray-800 ml-3">Resume</Text>
                     </View>
 
-                    <View className="bg-white rounded-2xl p-4 shadow-sm flex-row items-center">
-                        <View className="w-12 h-12 bg-red-500 rounded-lg items-center justify-center mr-4">
-                            <Text className="text-white font-bold text-xs">PDF</Text>
+                    {profile.resume ? (
+                        <View className="bg-white rounded-2xl p-4 shadow-sm flex-row items-center">
+                            <View className="w-12 h-12 bg-red-500 rounded-lg items-center justify-center mr-4">
+                                <Text className="text-white font-bold text-xs">PDF</Text>
+                            </View>
+                            <View className="flex-1">
+                                <Text className="text-gray-800 font-semibold text-base mb-1">{profile.resume.name || 'Resume'}</Text>
+                                <Text className="text-gray-500 text-sm">{profile.resume.size || 'Tamaño no disponible'} • {profile.resume.date || 'Fecha no disponible'}</Text>
+                            </View>
                         </View>
-                        <View className="flex-1">
-                            <Text className="text-gray-800 font-semibold text-base mb-1">{profile.resume?.name}</Text>
-                            <Text className="text-gray-500 text-sm">{profile.resume?.size} • {profile.resume?.date}</Text>
+                    ) : (
+                        <View className="bg-white rounded-2xl p-4 shadow-sm">
+                            <Text className="text-gray-500 text-base">No hay resume disponible.</Text>
                         </View>
-                    </View>
+                    )}
                 </View>
 
                 {/* Certificates */}
@@ -143,15 +161,21 @@ const ProfileScreen = () => {
                         <Text className="text-xl font-bold text-gray-800 ml-3">Certificates</Text>
                     </View>
 
-                    <View className="bg-white rounded-2xl p-4 shadow-sm flex-row items-center">
-                        <View className="w-12 h-12 bg-red-500 rounded-lg items-center justify-center mr-4">
-                            <Text className="text-white font-bold text-xs">PDF</Text>
+                    {profile.certificates && profile.certificates.length > 0 ? (
+                        <View className="bg-white rounded-2xl p-4 shadow-sm flex-row items-center">
+                            <View className="w-12 h-12 bg-red-500 rounded-lg items-center justify-center mr-4">
+                                <Text className="text-white font-bold text-xs">PDF</Text>
+                            </View>
+                            <View className="flex-1">
+                                <Text className="text-gray-800 font-semibold text-base mb-1">{profile.certificates[0]?.name || 'Certificado'}</Text>
+                                <Text className="text-gray-500 text-sm">{profile.certificates[0]?.size || 'Tamaño no disponible'} • {profile.certificates[0]?.date || 'Fecha no disponible'}</Text>
+                            </View>
                         </View>
-                        <View className="flex-1">
-                            <Text className="text-gray-800 font-semibold text-base mb-1">{profile.certificates[0]?.name}</Text>
-                            <Text className="text-gray-500 text-sm">{profile.certificates[0]?.size} • {profile.certificates[0]?.date}</Text>
+                    ) : (
+                        <View className="bg-white rounded-2xl p-4 shadow-sm">
+                            <Text className="text-gray-500 text-base">No hay certificados disponibles.</Text>
                         </View>
-                    </View>
+                    )}
                 </View>
             </View>
         </ScrollView>

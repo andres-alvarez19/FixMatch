@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
-import Swiper from "react-native-deck-swiper"
+import Carousel from 'react-native-reanimated-carousel'
 import { SafeAreaView } from "react-native-safe-area-context"
 
 interface Specialist {
@@ -270,66 +270,19 @@ const SpecialistCard = ({ specialist }: { specialist: Specialist }) => {
 
 export default function ClientSwipe() {
   const router = useRouter()
+  const width = 350 // Puedes ajustar el ancho de la tarjeta según tu diseño
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFFEF7]">
-      <Swiper
-        cards={specialists}
-        renderCard={(specialist: Specialist) => <SpecialistCard specialist={specialist} />}
-        containerStyle={{ flex: 1 }}
-        cardStyle={{ margin: 0, padding: 0 }}
-        onSwipedLeft={(cardIndex: number) => console.log("Rechazado:", specialists[cardIndex].name)}
-        onSwipedRight={(cardIndex: number) => console.log("Aceptado:", specialists[cardIndex].name)}
-        onSwipedAll={() => console.log("No hay más especialistas")}
-        cardIndex={0}
-        backgroundColor={"#FFFEF7"}
-        stackSize={2}
-        stackSeparation={15}
-        animateCardOpacity
-        verticalSwipe={false}
-        showSecondCard={true}
-        animateOverlayLabelsOpacity
-        overlayLabels={{
-          left: {
-            title: "RECHAZAR",
-            style: {
-              label: {
-                backgroundColor: "#FF6B6B",
-                color: "white",
-                fontSize: 24,
-                fontWeight: "bold",
-                borderRadius: 10,
-                padding: 10,
-              },
-              wrapper: {
-                flexDirection: "column",
-                alignItems: "flex-end",
-                justifyContent: "flex-start",
-                marginTop: 30,
-                marginLeft: -30,
-              },
-            },
-          },
-          right: {
-            title: "CONTACTAR",
-            style: {
-              label: {
-                backgroundColor: "#4ECDC4",
-                color: "white",
-                fontSize: 24,
-                fontWeight: "bold",
-                borderRadius: 10,
-                padding: 10,
-              },
-              wrapper: {
-                flexDirection: "column",
-                alignItems: "flex-start",
-                justifyContent: "flex-start",
-                marginTop: 30,
-                marginLeft: 30,
-              },
-            },
-          },
+      <Carousel
+        width={width}
+        height={650}
+        data={specialists}
+        renderItem={({ item }) => <SpecialistCard specialist={item} />}
+        style={{ flex: 1 }}
+        loop={false}
+        onSnapToItem={(index) => {
+          // Puedes agregar lógica aquí si necesitas saber el índice actual
         }}
       />
     </SafeAreaView>

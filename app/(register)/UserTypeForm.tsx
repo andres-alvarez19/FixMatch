@@ -56,9 +56,10 @@ export default function UserTypeScreen() {
         className="w-full bg-yellow-300 rounded-lg py-3 mt-8"
         disabled={!selected}
         onPress={() => {
-          updateRegisterData({ tipoUsuario: selected === "client" ? "cliente" : "especialista" });
+          if (!selected) return; // Guarda de seguridad
+          updateRegisterData({ tipoUsuario: selected });
           router.push({
-            pathname: "/Location",
+            pathname: "/(register)/Location",
             params: { userType: selected }
           });
         }}

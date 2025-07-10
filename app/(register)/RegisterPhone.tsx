@@ -10,6 +10,13 @@ export default function RegisterPhone() {
   const [errors, setErrors] = useState<any>({});
   const [formTriedSubmit, setFormTriedSubmit] = useState(false);
 
+  useEffect(() => {
+    const { nombre, email } = params;
+    if (nombre && email) {
+      updateRegisterData({ nombre, email });
+    }
+  }, []);
+
   const validate = () => {
     const newErrors: any = {};
     if (!telefono.trim()) newErrors.telefono = "El teléfono es obligatorio";
@@ -22,7 +29,7 @@ export default function RegisterPhone() {
     setFormTriedSubmit(true);
     if (validate()) {
       updateRegisterData({ telefono });
-      router.push(`./RegisterPassword?nombre=${encodeURIComponent(params.nombre as string)}&email=${encodeURIComponent(params.email as string)}&telefono=${encodeURIComponent(telefono)}`);
+      router.push(`./RegisterPassword`);
     }
   };
 

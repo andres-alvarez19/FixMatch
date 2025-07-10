@@ -1,7 +1,9 @@
+import axios from 'axios';
 import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { API_BASE_URL, setAuthToken } from '../../api';
 import api from '../../api';
 import { useUser } from '../../contexts/UserContext';
 
@@ -31,17 +33,41 @@ export default function LoginForm({ showPassword, onShowPassword }: LoginFormPro
     setFormTriedSubmit(true);
     if (validate()) {
       try {
+        console.log('Iniciando login con:', { email });
+        const loginUrl = `${API_BASE_URL}/api/user/login`;
+        const profileUrl = `${API_BASE_URL}/api/user/profile`;
+
         // Llama a tu backend de login
-        const res = await api.post('/api/login', { email, password });
-        // Suponiendo que la respuesta es { id, tipoUsuario }
-        // Después del login exitoso, obtener el perfil completo
+        const res = await axios.post(loginUrl, { email, password });
+        console.log('Login exitoso:', res.data);
+        
+        // Configurar el token para las siguientes peticiones
+        const token = res.data.token;
+        setAuthToken(token);
+        console.log('Token configurado:', token);
+        console.log('Headers configurados:', api.defaults.headers.common);
+
+        // Después del login exitoso, obtener el perfil completo usando la instancia api
         const profileRes = await api.get('/api/user/profile');
-        setUser(profileRes.data); // Guarda el perfil completo en el contexto
+        console.log('Perfil obtenido:', profileRes.data);
+        
+        // Mapear los datos del backend al formato esperado por el frontend
+        const userProfile = {
+          id: res.data.id.toString(), // ID del login response
+          userType: res.data.tipoUsuario === 'CLIENT' ? 'cliente' : 'especialista' as any,
+          fullName: profileRes.data.name,
+          email: profileRes.data.email,
+        };
+        
+        console.log('Perfil mapeado:', userProfile);
+        setUser(userProfile); // Guarda el perfil mapeado en el contexto
+
         router.push({
-          pathname: "./login/LoginLoading",
-          params: { id: res.data.id, userType: res.data.tipoUsuario }
+          pathname: "/(tabs)/home",
         });
       } catch (e: any) {
+        console.error('Error en login:', e);
+        console.error('Error response:', e.response?.data);
         setErrors({ general: e.response?.data?.message || 'Error de autenticación' });
       }
     }
